@@ -1,0 +1,333 @@
+
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  
+  /* SAGED Academy Brand Color Palette */
+  --saged-forest-green: #124734; /* Deep Forest Green - Ecological wisdom */
+  --saged-forest-green-light: #1a6347;
+  --saged-forest-green-dark: #0d3324;
+  --saged-bronze: #D9A441; /* Warm Bronze/Ochre - Heritage & humanity */
+  --saged-bronze-light: #E4B865;
+  --saged-bronze-dark: #C28F30;
+  --saged-indigo: #1C2753; /* Indigo/Midnight Blue - Depth & intelligence */
+  --saged-indigo-light: #2a3a6f;
+  --saged-indigo-dark: #131a3c;
+  --saged-teal: #00A38B; /* Emerald/Teal - Renewal & technology */
+  --saged-teal-light: #00C5A7;
+  --saged-teal-dark: #008570;
+  --saged-cream: #F9F3E7; /* Soft Sand/Cream - Openness & learning */
+  --saged-cream-light: #FFFAF0;
+  --saged-cream-dark: #F0E5D3;
+  
+  /* Legacy aliases for backwards compatibility */
+  --saged-primary: #124734;
+  --saged-primary-light: #1a6347;
+  --saged-primary-dark: #0d3324;
+  --saged-secondary: #00A38B;
+  --saged-secondary-light: #00C5A7;
+  --saged-secondary-dark: #008570;
+  --saged-accent: #D9A441;
+  --saged-accent-light: #E4B865;
+  --saged-accent-dark: #C28F30;
+  --saged-neutral: #F9F3E7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  .saged-gradient {
+    background: linear-gradient(135deg, #124734 0%, #00A38B 100%);
+  }
+  
+  .saged-hero-gradient {
+    background: linear-gradient(135deg, #F9F3E7 0%, #F0E5D3 100%);
+  }
+  
+  .saged-card {
+    @apply bg-white shadow-sm hover:shadow-md transition-shadow duration-300;
+    border: 1px solid rgba(18, 71, 52, 0.1);
+  }
+  
+  .saged-button {
+    @apply font-medium px-8 py-4 rounded-none transition-colors duration-200 shadow-sm hover:shadow-md;
+    background: #00A38B;
+    color: white !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .saged-button:hover {
+    background: #008570;
+  }
+  
+  .saged-button-outline {
+    @apply font-medium px-8 py-4 rounded-none transition-all duration-200;
+    border: 2px solid #00A38B;
+    color: #00A38B !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .saged-button-outline:hover {
+    background: #00A38B;
+    color: white !important;
+  }
+  
+  .saged-button-earth {
+    @apply font-medium px-8 py-4 rounded-none transition-all duration-200 shadow-sm hover:shadow-md;
+    background: linear-gradient(135deg, #124734 0%, #0d3324 100%);
+    color: white;
+  }
+  
+  .saged-button-earth:hover {
+    background: linear-gradient(135deg, #1a6347 0%, #124734 100%);
+  }
+
+  .african-pattern {
+    background-image: 
+      radial-gradient(circle at 1px 1px, #124734 1px, transparent 0),
+      radial-gradient(circle at 10px 10px, #D9A441 1px, transparent 0);
+    background-size: 20px 20px;
+    opacity: 0.04;
+  }
+  
+  .hero-headline {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+  
+  .tech-accent {
+    color: #00A38B;
+  }
+  
+  .earth-accent {
+    color: #124734;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+.animate-count-up {
+  animation: countUp 2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes countUp {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9F3E7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #124734 0%, #00A38B 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #1a6347 0%, #00C5A7 100%);
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  --tw-ring-color: #00A38B;
+}
+
+/* Animation for numeric counters */
+.counter {
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+/* Force text visibility for accessibility */
+.force-dark-text {
+  color: #111827 !important;
+}
+
+.force-muted-text {
+  color: #374151 !important;
+}
+
+.force-teal-text {
+  color: #00A38B !important;
+}
+
+.force-green-text {
+  color: #124734 !important;
+}
+
+.force-bronze-text {
+  color: #D9A441 !important;
+}
+
+.force-white-text {
+  color: #ffffff !important;
+}
+
+.force-blue-text {
+  color: #00A38B !important;
+}
+
+.force-blue-text:hover {
+  color: #008573 !important;
+}
+
+/* Blockly flyout background colour */
+.blocklyFlyoutBackground {
+  fill: #f5f5f4 !important;
+  fill-opacity: 1 !important;
+}
+
+/* Game animations */
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.animate-confetti {
+  animation: confetti 3s ease-in-out forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* 3D Card Flip animations for Strategy Arena */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Card reveal animation */
+@keyframes cardReveal {
+  0% { 
+    transform: scale(0.8) rotateY(-180deg); 
+    opacity: 0; 
+  }
+  50% { 
+    transform: scale(1.1) rotateY(-90deg); 
+    opacity: 0.5; 
+  }
+  100% { 
+    transform: scale(1) rotateY(0deg); 
+    opacity: 1; 
+  }
+}
+
+.animate-card-reveal {
+  animation: cardReveal 0.6s ease-out forwards;
+}
+
+/* Pulse glow for interactive cards */
+@keyframes pulseGlow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); 
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(217, 164, 65, 0.4); 
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Lion prowl animation */
+@keyframes lionProwl {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px) translateY(1px); }
+  75% { transform: translateX(3px) translateY(-1px); }
+}
+
+.animate-lion-prowl {
+  animation: lionProwl 2s ease-in-out infinite;
+}
+
+/* Hare hop animation */
+@keyframes hareHop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-hare-hop {
+  animation: hareHop 0.5s ease-in-out;
+}
+
