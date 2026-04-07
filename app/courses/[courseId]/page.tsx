@@ -8,13 +8,13 @@ import CourseDetailPage from '@/components/pages/course-detail-page';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: { courseId: string };
+  params: Promise<{ courseId: string }>;
 }
 
 export default async function CourseDetail({ params }: PageProps) {
+  const { courseId } = await params;
   const session = await getServerSession(authOptions);
-  const { courseId } = params;
-
+  
   // Determine if user is authenticated
   const isAuthenticated = !!session;
 

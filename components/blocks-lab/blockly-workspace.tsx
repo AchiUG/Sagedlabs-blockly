@@ -1,30 +1,71 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
 import { defineCustomBlocks, workspaceToCommands } from './custom-blocks';
 import { defaultToolbox } from './toolbox-config';
 
 interface BlocklyWorkspaceProps {
   initialWorkspace?: any;
+  starterWorkspace?: any;
   toolboxConfig?: any;
   onWorkspaceChange?: (workspace: any, commands: any[]) => void;
   readOnly?: boolean;
 }
 
-export default function BlocklyWorkspace({
+export interface BlocklyWorkspaceHandle {
+  resetWorkspace: () => void;
+  getCommands: () => any[];
+}
+
+const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProps>(({
   initialWorkspace,
+  starterWorkspace,
   toolboxConfig,
   onWorkspaceChange,
   readOnly = false,
-}: BlocklyWorkspaceProps) {
+}, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<any>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const selectedCatRef = useRef<string | null>(null);
   const colorMapRef = useRef<Record<string, string>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [Blockly, setBlockly] = useState<any>(null);
 
   const actualToolbox = toolboxConfig || defaultToolbox;
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    resetWorkspace: () => {
+      if (workspaceRef.current && Blockly) {
+        // Clear and reload starter workspace
+        workspaceRef.current.clear();
+        if (starterWorkspace) {
+          try {
+            // Ensure we are in a state that allows loading
+            const wasReadOnly = workspaceRef.current.readOnly;
+            if (wasReadOnly) workspaceRef.current.options.readOnly = false;
+            
+            Blockly.serialization.workspaces.load(starterWorkspace, workspaceRef.current);
+            
+            if (wasReadOnly) workspaceRef.current.options.readOnly = true;
+          } catch (error) {
+            console.error('Failed to reload starter workspace:', error);
+          }
+        }
+        // Force update parent immediately after reset
+        const state = Blockly.serialization.workspaces.save(workspaceRef.current);
+        const commands = workspaceToCommands(workspaceRef.current);
+        if (onWorkspaceChange) {
+          onWorkspaceChange(state, commands);
+        }
+      }
+    },
+    getCommands: () => {
+      if (!workspaceRef.current) return [];
+      return workspaceToCommands(workspaceRef.current);
+    }
+  }), [Blockly, starterWorkspace, onWorkspaceChange]);
 
   // Load Blockly dynamically (client-side only)
   useEffect(() => {
@@ -101,18 +142,19 @@ export default function BlocklyWorkspace({
       const bg = isSelected && color ? color : 'transparent';
       const textColor = isSelected && color ? '#fff' : '#44403c';
 
-      setI(el, 'padding', '8px 12px');
-      setI(el, 'margin', '0');
+      setI(el, 'padding', '10px 12px');
+      setI(el, 'margin', '4px 0');
       setI(el, 'border', 'none');
       setI(el, 'border-left', 'none');
-      setI(el, 'border-radius', '6px');
+      setI(el, 'border-radius', '8px');
       setI(el, 'cursor', 'pointer');
-      setI(el, 'display', 'block');
+      setI(el, 'display', 'flex');
+      setI(el, 'align-items', 'center');
       setI(el, 'width', '100%');
       setI(el, 'box-sizing', 'border-box');
       setI(el, 'white-space', 'nowrap');
       setI(el, 'background-color', bg);
-      setI(el, 'box-shadow', isSelected ? '0 1px 4px rgba(0,0,0,0.15)' : 'none');
+      setI(el, 'box-shadow', isSelected ? '0 2px 4px rgba(0,0,0,0.1)' : 'none');
       setI(el, 'pointer-events', 'auto');
       el.setAttribute('data-selected', String(isSelected));
 
@@ -122,8 +164,10 @@ export default function BlocklyWorkspace({
         setI(label, 'font-weight', '600');
         setI(label, 'color', textColor);
         setI(label, 'white-space', 'nowrap');
+        setI(label, 'line-height', '1');
+        setI(label, 'display', 'block');
         if (isSelected) {
-          setI(label, 'text-shadow', '0 1px 2px rgba(0,0,0,0.2)');
+          setI(label, 'text-shadow', '0 1px 2px rgba(0,0,0,0.1)');
         } else {
           label.style.removeProperty('text-shadow');
         }
@@ -138,27 +182,52 @@ export default function BlocklyWorkspace({
 
     const applySelection = (selectedId: string | null) => {
       cats.forEach((cat: Element) => {
-        styleTab(cat as HTMLElement, (cat as HTMLElement).id === selectedId);
+        const el = cat as HTMLElement;
+        styleTab(el, el.id === selectedId);
       });
     };
 
-    // Add click listeners for visual highlight
+    // 1. Add click listeners for immediate visual feedback
     cats.forEach((cat: Element) => {
       const el = cat as HTMLElement;
       el.addEventListener('click', () => {
-        const alreadySelected = selectedCatRef.current === el.id;
-        selectedCatRef.current = alreadySelected ? null : el.id;
-        applySelection(selectedCatRef.current);
+        // If we click an already selected category, Blockly might close it
+        // but we'll let the event listener handle the final state sync.
+        applySelection(el.id);
       });
     });
 
-    selectedCatRef.current = null;
+    // 2. Use Blockly's event system to track deselection (e.g. clicking workspace)
+    if (workspaceRef.current) {
+      const workspace = workspaceRef.current;
+      
+      const onToolboxSelect = (event: any) => {
+        if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
+          // Sync our UI with Blockly's internal selection
+          // newItem will be null if the flyout is closed
+          applySelection(event.newItem || null);
+        }
+      };
+      
+      workspace.addChangeListener(onToolboxSelect);
+      (workspace as any)._toolboxListener = onToolboxSelect;
+    }
+
     applySelection(null);
-  }, []);
+  }, [Blockly]);
 
   // Initialize workspace
   useEffect(() => {
-    if (!Blockly || !containerRef.current || workspaceRef.current) return;
+    if (!Blockly || !containerRef.current) return;
+
+    // If workspace already exists, dispose it before re-injecting (handles prop changes)
+    if (workspaceRef.current) {
+      if ((workspaceRef.current as any)._toolboxListener) {
+        workspaceRef.current.removeChangeListener((workspaceRef.current as any)._toolboxListener);
+      }
+      workspaceRef.current.dispose();
+      workspaceRef.current = null;
+    }
 
     defineCustomBlocks(Blockly);
 
@@ -180,21 +249,58 @@ export default function BlocklyWorkspace({
 
     workspaceRef.current = workspace;
 
+    // Disable auto-close on flyout so blocks persist while dragging (Scratch-like behavior)
+    const flyout = workspace.getFlyout();
+    if (flyout) {
+      (flyout as any).autoClose = false;
+    }
+
+    // Load initial workspace state
+    const workspaceToLoad = initialWorkspace || starterWorkspace;
+    if (workspaceToLoad) {
+      try {
+        Blockly.serialization.workspaces.load(workspaceToLoad, workspace);
+      } catch (error) {
+        console.error('Failed to load workspace state:', error);
+      }
+    }
+
+    // Force an update to parent to sync the loaded state (especially if it came from starter)
+    // We use a small timeout to ensure the workspace is fully settled and rendered
+    setTimeout(() => {
+      if (onWorkspaceChange && workspaceRef.current) {
+        const state = Blockly.serialization.workspaces.save(workspaceRef.current);
+        const commands = workspaceToCommands(workspaceRef.current);
+        onWorkspaceChange(state, commands);
+      }
+    }, 100);
+
     // Style the native toolbox categories after DOM is ready
     setTimeout(() => setupCategoryTabs(), 150);
 
-    // Load initial workspace if provided
-    if (initialWorkspace) {
-      try {
-        Blockly.serialization.workspaces.load(initialWorkspace, workspace);
-      } catch (error) {
-        console.error('Failed to load initial workspace:', error);
+    // Ensure initial sizing is correct
+    const doResize = () => {
+      if (workspaceRef.current) {
+        Blockly.svgResize(workspaceRef.current);
       }
+    };
+    requestAnimationFrame(() => {
+      doResize();
+      requestAnimationFrame(doResize);
+    });
+
+    // React to container size changes
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserverRef.current?.disconnect();
+      resizeObserverRef.current = new ResizeObserver(() => doResize());
+      resizeObserverRef.current.observe(containerRef.current);
     }
 
     // Change listener with debounce
     let debounceTimer: NodeJS.Timeout;
-    const handleChange = () => {
+    const handleChange = (event: any) => {
+      if (event.isUiEvent) return;
+      
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (onWorkspaceChange && workspaceRef.current) {
@@ -202,7 +308,7 @@ export default function BlocklyWorkspace({
           const commands = workspaceToCommands(workspaceRef.current);
           onWorkspaceChange(state, commands);
         }
-      }, 500);
+      }, 300);
     };
 
     workspace.addChangeListener(handleChange);
@@ -210,12 +316,16 @@ export default function BlocklyWorkspace({
 
     return () => {
       clearTimeout(debounceTimer);
+      resizeObserverRef.current?.disconnect(); 
       if (workspaceRef.current) {
+        if ((workspaceRef.current as any)._toolboxListener) {
+          workspaceRef.current.removeChangeListener((workspaceRef.current as any)._toolboxListener);
+        }
         workspaceRef.current.dispose();
         workspaceRef.current = null;
       }
     };
-  }, [Blockly, toolboxConfig, initialWorkspace, onWorkspaceChange, readOnly, setupCategoryTabs]);
+  }, [Blockly, readOnly, actualToolbox]); // Back to stable dependencies
 
   // Handle window resize
   useEffect(() => {
@@ -240,7 +350,16 @@ export default function BlocklyWorkspace({
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div 
+      className="blockly-wrapper"
+      style={{ 
+        position: 'relative', 
+        width: '100%', 
+        height: '100%',
+        minHeight: 600,
+        overflow: 'hidden'
+      }}
+    >
       {!isLoaded && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex',
@@ -258,7 +377,53 @@ export default function BlocklyWorkspace({
           </div>
         </div>
       )}
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      
+      {/* 
+        The 'all: initial' wrapper is CRITICAL. 
+        It prevents Tailwind's base styles (like box-sizing: border-box on everything) 
+        from breaking Blockly's internal SVG calculations.
+      */}
+      <div 
+        style={{ all: 'initial', display: 'block', width: '100%', height: '100%' }}
+      >
+        <div 
+          ref={containerRef} 
+          style={{ width: '100%', height: '100%', display: 'block' }} 
+        />
+      </div>
+
+      <style jsx global>{`
+        /* 
+           Style Blockly's internal widget containers (inputs, dropdowns).
+           We use a z-index lower than the Shadcn/Radix Dialog (usually 50)
+           to prevent input fields from overlapping the submit popup.
+        */
+        .blocklyWidgetDiv, .blocklyDropDownDiv {
+          z-index: 45 !important;
+        }
+        
+        .blocklyTooltipDiv {
+          z-index: 46 !important;
+        }
+        
+        /* Fix toolbox box-sizing which Tailwind breaks */
+        .blocklyToolboxDiv {
+          box-sizing: content-box !important;
+        }
+
+        /* Ensure the flyout stays visible and interactive */
+        .blocklyFlyout {
+          pointer-events: auto !important;
+        }
+
+        /* Prevent text color flickering in flyout */
+        .blocklyFlyoutLabelText {
+          fill: #44403c !important;
+        }
+      `}</style>
     </div>
   );
-}
+});
+
+BlocklyWorkspace.displayName = 'BlocklyWorkspace';
+export default BlocklyWorkspace;

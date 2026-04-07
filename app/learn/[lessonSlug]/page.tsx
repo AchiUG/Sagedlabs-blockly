@@ -5,19 +5,20 @@ import { prisma } from '@/lib/db';
 import BlocksLabClient from './blocks-lab-client';
 
 interface PageProps {
-  params: { lessonSlug: string };
+  params: Promise<{ lessonSlug: string }>;
 }
 
 export default async function BlocksLabPage({ params }: PageProps) {
+  const { lessonSlug } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect('/auth/signin?callbackUrl=/learn/' + params.lessonSlug);
+    redirect('/auth/signin?callbackUrl=/learn/' + lessonSlug);
   }
 
   // Fetch lesson
   const lesson = await prisma.blocksLesson.findUnique({
-    where: { slug: params.lessonSlug },
+    where: { slug: lessonSlug },
   });
 
   if (!lesson) {
@@ -39,6 +40,22 @@ export default async function BlocksLabPage({ params }: PageProps) {
     },
   });
 
+  // Fetch next lesson for navigation
+  const nextLesson = await prisma.blocksLesson.findFirst({
+    where: {
+      orderIndex: {
+        gt: lesson.orderIndex,
+      },
+      isPublished: true,
+    },
+    orderBy: {
+      orderIndex: 'asc',
+    },
+    select: {
+      slug: true,
+    },
+  });
+
   return (
     <BlocksLabClient
       lesson={{
@@ -51,6 +68,7 @@ export default async function BlocksLabPage({ params }: PageProps) {
         stageConfig: lesson.stageConfig,
         blockConfig: lesson.blockConfig,
       }}
+      nextLessonSlug={nextLesson?.slug || null}
       project={project ? {
         id: project.id,
         workspace: project.workspace,

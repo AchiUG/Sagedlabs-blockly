@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
+import { BlocksValidationService } from '@/lib/services/blocks-validation-service';
 
 // POST /api/blocks/submissions - Submit a project
 export async function POST(request: NextRequest) {
@@ -18,30 +19,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'lessonId and projectId are required' }, { status: 400 });
     }
 
-    // Verify the project belongs to the user
-    const project = await prisma.blocksProject.findUnique({
-      where: { id: projectId },
-    });
+    // Fetch project and lesson details
+    const [project, lesson] = await Promise.all([
+      prisma.blocksProject.findUnique({
+        where: { id: projectId },
+      }),
+      prisma.blocksLesson.findUnique({
+        where: { id: lessonId },
+      }),
+    ]);
 
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    if (!project || !lesson) {
+      return NextResponse.json({ error: 'Project or Lesson not found' }, { status: 404 });
     }
 
     if (project.userId !== session.user.id) {
       return NextResponse.json({ error: 'Not authorized to submit this project' }, { status: 403 });
     }
 
-    if (project.status === 'SUBMITTED') {
-      return NextResponse.json({ error: 'Project is already submitted' }, { status: 400 });
-    }
+    // Run validation
+    const validation = BlocksValidationService.validate(lesson.slug, project.generatedCode);
 
-    // Create submission and update project status in a transaction
+    // Create submission and update project status
     const submission = await prisma.blocksSubmission.create({
       data: {
         lessonId,
         projectId,
         userId: session.user.id,
         reflection: reflection || null,
+        feedback: validation.message,
+        grade: validation.isValid ? 100 : 0,
+        status: validation.isValid ? 'REVIEWED' : 'SUBMITTED', // Auto-review if perfect
       },
     });
 
@@ -53,6 +61,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
+      validation,
       submission: {
         id: submission.id,
         status: submission.status,

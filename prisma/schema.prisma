@@ -1,16 +1,11 @@
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
-    output = "/home/ubuntu/saged_lms/app/node_modules/.prisma/client"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -19,15 +14,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -41,85 +35,70 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  firstName     String?
-  lastName      String?
-  role          UserRole  @default(STUDENT)
-  bio           String?
-  institution   String?
-  
-  // Archetype & Journey
-  archetype     String?   // young_sage, educator, technologist, etc.
-  archetypeSecondary String? // for hybrid archetypes
-  pathwayType   String?   // educator, technologist, young_sage
-  onboardingCompleted Boolean @default(false)
-  onboardingStep String?  // current onboarding step
-  
-  // Subscription
-  subscriptionTier String? // basic, pro, mentor
-  subscriptionStatus String? // active, cancelled, expired
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String                 @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  firstName             String?
+  lastName              String?
+  role                  UserRole               @default(STUDENT)
+  bio                   String?
+  institution           String?
+  archetype             String?
+  archetypeSecondary    String?
+  pathwayType           String?
+  onboardingCompleted   Boolean                @default(false)
+  onboardingStep        String?
+  subscriptionTier      String?
+  subscriptionStatus    String?
   subscriptionStartDate DateTime?
-  subscriptionEndDate DateTime?
-  
-  // Wallet (optional)
-  walletAddress String?
-  walletEnabled Boolean @default(false)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts      Account[]
-  sessions      Session[]
-  enrollments   Enrollment[]
-  coursesCreated Course[] @relation("CourseInstructor")
-  submissions   AssignmentSubmission[]
-  progress      Progress[]
-  certificates  Certificate[]
-  forumPosts    ForumPost[]
-  forumReplies  ForumReply[]
-  gamification  UserGamification?
-  userBadges    UserBadge[]
-  skillProgress SkillProgress[]
-  checkpoints   UserCheckpoint[]
-  masteryRecords MasteryRecord[]
-  tokenTransactions TokenTransaction[]
-  
-  // SVU System Relations
-  activities        Activity[]        @relation("UserActivities")
-  contributions     Contribution[]    @relation("UserContributions")
-  verifications     Verification[]    @relation("VerifierActivities")
-  svuBalance        SVUBalance?
-  earnDownRecords   EarnDownRecord[]  @relation("UserEarnDowns")
-  sagedTokens       SAGEDToken[]      @relation("UserSAGEDTokens")
-  resilienceScore   ResilienceScore?
-  communityImpacts  CommunityImpact[] @relation("UserCommunityImpacts")
-  learningPaths     UserLearningPath[]
-  
-  // Blocks Lab Relations
-  blocksProjects    BlocksProject[]
-  blocksSubmissions BlocksSubmission[]
-  
-  // Group/Cohort assignment
-  groupId           String?
-  group             Group?            @relation(fields: [groupId], references: [id])
+  subscriptionEndDate   DateTime?
+  walletAddress         String?
+  walletEnabled         Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  groupId               String?
+  accounts              Account[]
+  activities            Activity[]             @relation("UserActivities")
+  submissions           AssignmentSubmission[]
+  blocksProjects        BlocksProject[]
+  blocksSubmissions     BlocksSubmission[]
+  certificates          Certificate[]
+  communityImpacts      CommunityImpact[]      @relation("UserCommunityImpacts")
+  contributions         Contribution[]         @relation("UserContributions")
+  coursesCreated        Course[]               @relation("CourseInstructor")
+  earnDownRecords       EarnDownRecord[]       @relation("UserEarnDowns")
+  enrollments           Enrollment[]
+  forumPosts            ForumPost[]
+  forumReplies          ForumReply[]
+  masteryRecords        MasteryRecord[]
+  progress              Progress[]
+  resilienceScore       ResilienceScore?
+  sagedTokens           SAGEDToken[]           @relation("UserSAGEDTokens")
+  svuBalance            SVUBalance?
+  sessions              Session[]
+  skillProgress         SkillProgress[]
+  tokenTransactions     TokenTransaction[]
+  group                 Group?                 @relation(fields: [groupId], references: [id])
+  userBadges            UserBadge[]
+  checkpoints           UserCheckpoint[]
+  gamification          UserGamification?
+  learningPaths         UserLearningPath[]
+  verifications         Verification[]         @relation("VerifierActivities")
 }
 
 model Group {
   id          String   @id @default(cuid())
-  code        String   @unique      // e.g., "YS-S01" for Young Sages Season 1
-  name        String                // e.g., "Young Sages Season 1"
+  code        String   @unique
+  name        String
   description String?
-  courseId    String?               // Optional: Default course to enroll group members
-  maxMembers  Int?                  // Optional capacity limit
+  courseId    String?
+  maxMembers  Int?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   course      Course?  @relation(fields: [courseId], references: [id])
   members     User[]
 
@@ -135,44 +114,31 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-enum UserRole {
-  STUDENT
-  INSTRUCTOR
-  ADMIN
-}
-
 model Course {
-  id              String        @id @default(cuid())
-  title           String
-  description     String        @db.Text
-  shortDescription String?
-  imageUrl        String?
-  level           CourseLevel
-  learningStage   Int?          // 1-7: Seeker, Apprentice, Cultivator, Griot-Scholar, Architect, Guardian, Sage
-  duration        String
-  prerequisites   String?
+  id                 String           @id @default(cuid())
+  title              String
+  description        String
+  shortDescription   String?
+  imageUrl           String?
+  level              CourseLevel
+  learningStage      Int?
+  duration           String
+  prerequisites      String?
   learningObjectives String[]
-  price           Float         @default(0)
-  isPublished     Boolean       @default(false)
-  instructorId    String
-  categoryId      String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  instructor      User          @relation("CourseInstructor", fields: [instructorId], references: [id])
-  category        Category?     @relation(fields: [categoryId], references: [id])
-  modules         Module[]
-  enrollments     Enrollment[]
-  certificates    Certificate[]
-  forumPosts      ForumPost[]
-  earnDownRecords EarnDownRecord[] @relation("CourseEarnDowns")
-  groups          Group[]
-}
-
-enum CourseLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
+  price              Float            @default(0)
+  isPublished        Boolean          @default(false)
+  instructorId       String
+  categoryId         String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  certificates       Certificate[]
+  category           Category?        @relation(fields: [categoryId], references: [id])
+  instructor         User             @relation("CourseInstructor", fields: [instructorId], references: [id])
+  earnDownRecords    EarnDownRecord[] @relation("CourseEarnDowns")
+  enrollments        Enrollment[]
+  forumPosts         ForumPost[]
+  groups             Group[]
+  modules            Module[]
 }
 
 model Category {
@@ -183,49 +149,600 @@ model Category {
 }
 
 model Module {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
   orderIndex  Int
   courseId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   assignments Assignment[]
+  lessons     Lesson[]
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Lesson {
-  id          String      @id @default(cuid())
-  title       String
-  content     String      @db.Text
-  videoUrl    String?     // External video URL (Riverside, Google Drive, YouTube, etc.)
-  thumbnailUrl String?    // Video thumbnail/preview image URL
-  duration    Int?        // in minutes
-  orderIndex  Int
-  moduleId    String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  progress    Progress[]
+  id           String     @id @default(cuid())
+  title        String
+  content      String
+  videoUrl     String?
+  thumbnailUrl String?
+  duration     Int?
+  orderIndex   Int
+  moduleId     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  module       Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress     Progress[]
 }
 
 model Assignment {
+  id          String                 @id @default(cuid())
+  title       String
+  description String
+  type        AssignmentType
+  dueDate     DateTime?
+  maxScore    Int                    @default(100)
+  orderIndex  Int
+  moduleId    String
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  module      Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(cuid())
+  content      String?
+  fileUrl      String?
+  score        Int?
+  feedback     String?
+  submittedAt  DateTime   @default(now())
+  gradedAt     DateTime?
+  assignmentId String
+  userId       String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  id          String           @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+  status      EnrollmentStatus @default(ACTIVE)
+  progress    Float            @default(0)
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Progress {
+  id           String   @id @default(cuid())
+  userId       String
+  lessonId     String
+  completed    Boolean  @default(false)
+  timeSpent    Int      @default(0)
+  lastAccessed DateTime @default(now())
+  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Certificate {
+  id              String          @id @default(cuid())
+  userId          String
+  courseId        String?
+  certificateType CertificateType @default(COURSE)
+  stageLevel      Int?
+  stageLevelTitle String?
+  issuedAt        DateTime        @default(now())
+  certificateUrl  String?
+  accredibleId    String?         @unique
+  verificationUrl String?
+  credentialData  String?
+  course          Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId, certificateType])
+  @@index([accredibleId])
+}
+
+model ForumPost {
+  id        String       @id @default(cuid())
+  title     String
+  content   String
+  userId    String
+  courseId  String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  course    Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   ForumReply[]
+}
+
+model ForumReply {
+  id        String    @id @default(cuid())
+  content   String
+  userId    String
+  postId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserGamification {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  totalXP        Int      @default(0)
+  currentLevel   Int      @default(1)
+  currentStage   Int      @default(1)
+  stageTitle     String   @default("Seeker")
+  streakDays     Int      @default(0)
+  lastActiveDate DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String
+  iconName    String
+  category    BadgeCategory
+  xpReward    Int           @default(0)
+  rarity      BadgeRarity   @default(COMMON)
+  criteria    String
+  createdAt   DateTime      @default(now())
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  progress Int      @default(100)
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model Skill {
+  id            String          @id @default(cuid())
+  name          String          @unique
+  description   String
+  iconName      String
+  category      String
+  parentSkillId String?
+  moduleIds     String[]
+  requiredXP    Int             @default(100)
+  orderIndex    Int             @default(0)
+  createdAt     DateTime        @default(now())
+  parentSkill   Skill?          @relation("SkillHierarchy", fields: [parentSkillId], references: [id])
+  childSkills   Skill[]         @relation("SkillHierarchy")
+  progress      SkillProgress[]
+}
+
+model SkillProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  skillId       String
+  xpEarned      Int      @default(0)
+  isUnlocked    Boolean  @default(false)
+  isMastered    Boolean  @default(false)
+  lastPracticed DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model Checkpoint {
+  id              String           @id @default(cuid())
+  moduleId        String
+  name            String
+  description     String
+  orderIndex      Int
+  xpReward        Int              @default(50)
+  requiredScore   Int              @default(70)
+  createdAt       DateTime         @default(now())
+  userCheckpoints UserCheckpoint[]
+}
+
+model UserCheckpoint {
+  id           String     @id @default(cuid())
+  userId       String
+  checkpointId String
+  isCompleted  Boolean    @default(false)
+  score        Int?
+  attempts     Int        @default(0)
+  completedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, checkpointId])
+}
+
+model MasteryRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  moduleId        String
+  masteryLevel    Int      @default(0)
+  assessmentScore Int      @default(0)
+  timeInvested    Int      @default(0)
+  practiceCount   Int      @default(0)
+  lastPracticed   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model StageRequirement {
+  id               String   @id @default(cuid())
+  stage            Int      @unique
+  title            String
+  description      String
+  requiredXP       Int
+  requiredBadges   String[]
+  requiredSkills   String[]
+  capstoneModuleId String?
+  createdAt        DateTime @default(now())
+}
+
+model TokenTransaction {
+  id        String    @id @default(cuid())
+  userId    String
+  amount    Int
+  tokenType TokenType @default(SAGE)
+  reason    String
+  metadata  String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model TokenBalance {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  sageTokens       Int      @default(0)
+  reflectionTokens Int      @default(0)
+  lifetimeTokens   Int      @default(0)
+  lastUpdated      DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Pillar {
+  id                         String     @id @default(cuid())
+  code                       String     @unique
+  name                       String
+  description                String
+  irreplaceabilityMultiplier Float
+  examples                   String[]
+  orderIndex                 Int
+  createdAt                  DateTime   @default(now())
+  updatedAt                  DateTime   @updatedAt
+  activities                 Activity[]
+}
+
+model LearningPath {
+  id                   String             @id @default(cuid())
+  code                 String             @unique
+  name                 String
+  description          String
+  pathWeightMultiplier Float
+  focusAreas           String[]
+  createdAt            DateTime           @default(now())
+  userPaths            UserLearningPath[]
+}
+
+model UserLearningPath {
+  id         String       @id @default(cuid())
+  userId     String
+  pathId     String
+  isPrimary  Boolean      @default(true)
+  selectedAt DateTime     @default(now())
+  path       LearningPath @relation(fields: [pathId], references: [id])
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pathId])
+}
+
+model ActivityCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String
+  basePoints  Int        @default(10)
+  iconName    String
+  pillars     String[]
+  createdAt   DateTime   @default(now())
+  activities  Activity[]
+}
+
+model Activity {
   id            String           @id @default(cuid())
+  userId        String
+  categoryId    String
+  pillarId      String
   title         String
-  description   String           @db.Text
-  type          AssignmentType
-  dueDate       DateTime?
-  maxScore      Int              @default(100)
-  orderIndex    Int
-  moduleId      String
+  description   String
+  activityType  ActivityType
+  hoursSpent    Float            @default(0)
+  reach         Int?
+  evidence      String?
+  metadata      String?
+  status        ActivityStatus   @default(PENDING)
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  category      ActivityCategory @relation(fields: [categoryId], references: [id])
+  pillar        Pillar           @relation(fields: [pillarId], references: [id])
+  user          User             @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  contributions Contribution[]
+  verifications Verification[]
 
-  module        Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  submissions   AssignmentSubmission[]
+  @@index([userId, status])
+  @@index([createdAt])
+}
+
+model Contribution {
+  id                         String   @id @default(cuid())
+  activityId                 String
+  userId                     String
+  basePoints                 Float
+  irreplaceabilityMultiplier Float
+  impactMultiplier           Float
+  pathWeightMultiplier       Float
+  verificationMultiplier     Float    @default(0.8)
+  svuEarned                  Float
+  calculatedAt               DateTime @default(now())
+  activity                   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user                       User     @relation("UserContributions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([calculatedAt])
+}
+
+model Verification {
+  id               String             @id @default(cuid())
+  activityId       String
+  verifierId       String?
+  verificationType VerificationType
+  status           VerificationStatus @default(PENDING)
+  evidence         String?
+  notes            String?
+  impactScore      Float?
+  submittedAt      DateTime           @default(now())
+  reviewedAt       DateTime?
+  activity         Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  verifier         User?              @relation("VerifierActivities", fields: [verifierId], references: [id])
+
+  @@index([status])
+}
+
+model SVUBalance {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  totalSVU     Float    @default(0)
+  availableSVU Float    @default(0)
+  usedSVU      Float    @default(0)
+  verifiedSVU  Float    @default(0)
+  lifetimeSVU  Float    @default(0)
+  lastUpdated  DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EarnDownRecord {
+  id                 String    @id @default(cuid())
+  userId             String
+  courseId           String
+  originalPrice      Float
+  svuApplied         Float
+  conversionRate     Float     @default(100)
+  discountAmount     Float
+  finalPrice         Float
+  maxDiscountPercent Float     @default(70)
+  appliedAt          DateTime  @default(now())
+  expiresAt          DateTime?
+  course             Course    @relation("CourseEarnDowns", fields: [courseId], references: [id], onDelete: Cascade)
+  user               User      @relation("UserEarnDowns", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, courseId])
+}
+
+model SAGEDToken {
+  id                 String          @id @default(cuid())
+  userId             String
+  amount             Float           @default(0)
+  sourceType         TokenSourceType
+  sourceActivityId   String?
+  conversionRate     Float           @default(1.0)
+  eligibilityPercent Float           @default(100)
+  mintedAt           DateTime        @default(now())
+  walletAddress      String?
+  txHash             String?
+  user               User            @relation("UserSAGEDTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([mintedAt])
+}
+
+model ResilienceScore {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  overallScore        Float    @default(0)
+  symbolicScore       Float    @default(0)
+  adaptiveScore       Float    @default(0)
+  governanceScore     Float    @default(0)
+  equityScore         Float    @default(0)
+  defensiveScore      Float    @default(0)
+  automationRiskLevel String   @default("MODERATE")
+  lastCalculated      DateTime @default(now())
+  trendDirection      String?
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AdaptationReport {
+  id                   String   @id @default(cuid())
+  year                 Int      @unique
+  automationTrends     String
+  pillarAdjustments    String
+  skillRecommendations String
+  generatedAt          DateTime @default(now())
+}
+
+model CommunityImpact {
+  id                  String         @id @default(cuid())
+  userId              String
+  activityId          String         @unique
+  impactCategory      ImpactCategory
+  verifiedHours       Float
+  organizationName    String?
+  organizationLetter  String?
+  impactReach         Int?
+  sustainabilityScore Float?
+  recordedAt          DateTime       @default(now())
+  user                User           @relation("UserCommunityImpacts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([impactCategory])
+}
+
+model BlocksLesson {
+  id               String             @id @default(cuid())
+  slug             String             @unique
+  title            String
+  description      String?
+  instructions     String?
+  starterWorkspace Json?
+  stageConfig      Json?
+  blockConfig      Json?
+  orderIndex       Int                @default(0)
+  isPublished      Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  projects         BlocksProject[]
+  submissions      BlocksSubmission[]
+}
+
+model BlocksProject {
+  id            String              @id @default(cuid())
+  lessonId      String
+  userId        String
+  workspace     Json
+  generatedCode String?
+  status        BlocksProjectStatus @default(DRAFT)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  lesson        BlocksLesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions   BlocksSubmission[]
+
+  @@unique([lessonId, userId])
+}
+
+model BlocksSubmission {
+  id         String                 @id @default(cuid())
+  lessonId   String
+  projectId  String
+  userId     String
+  reflection String?
+  feedback   String?
+  grade      Int?
+  status     BlocksSubmissionStatus @default(SUBMITTED)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  lesson     BlocksLesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  project    BlocksProject          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([userId])
+}
+
+model YoungSagesApplication {
+  id                 String            @id @default(cuid())
+  childFirstName     String
+  childLastName      String
+  childAge           Int
+  guardianName       String
+  guardianEmail      String
+  guardianPhone      String?
+  country            String
+  timezone           String?
+  hasComputer        Boolean           @default(true)
+  hasInternet        Boolean           @default(true)
+  accessNotes        String?
+  selfAwareness      Int
+  agency             Int
+  growth             Int
+  ethics             Int
+  design             Int
+  whyJoin            String
+  priorExperience    String?
+  learningGoals      String?
+  parentalConsent    Boolean           @default(false)
+  mediaConsent       Boolean           @default(false)
+  rulesAccepted      Boolean           @default(false)
+  status             ApplicationStatus @default(PENDING)
+  adminNotes         String?
+  needsEmailFollowup Boolean           @default(true)
+  emailSentAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  reviewedAt         DateTime?
+  reviewedBy         String?
+
+  @@index([status])
+  @@index([guardianEmail])
+  @@index([createdAt])
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  firstName      String?
+  source         String?
+  interests      String[]
+  isVerified     Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  unsubscribedAt DateTime?
+
+  @@index([email])
+  @@index([source])
+  @@index([createdAt])
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 enum AssignmentType {
@@ -235,36 +752,6 @@ enum AssignmentType {
   CODE
 }
 
-model AssignmentSubmission {
-  id           String     @id @default(cuid())
-  content      String?    @db.Text
-  fileUrl      String?
-  score        Int?
-  feedback     String?
-  submittedAt  DateTime   @default(now())
-  gradedAt     DateTime?
-  assignmentId String
-  userId       String
-
-  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Enrollment {
-  id           String           @id @default(cuid())
-  userId       String
-  courseId     String
-  enrolledAt   DateTime         @default(now())
-  completedAt  DateTime?
-  status       EnrollmentStatus @default(ACTIVE)
-  progress     Float            @default(0) // percentage
-
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course       Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-}
-
 enum EnrollmentStatus {
   ACTIVE
   COMPLETED
@@ -272,105 +759,11 @@ enum EnrollmentStatus {
   SUSPENDED
 }
 
-model Progress {
-  id           String    @id @default(cuid())
-  userId       String
-  lessonId     String
-  completed    Boolean   @default(false)
-  timeSpent    Int       @default(0) // in minutes
-  lastAccessed DateTime  @default(now())
-
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson       Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, lessonId])
-}
-
-model Certificate {
-  id                String          @id @default(cuid())
-  userId            String
-  courseId          String?
-  certificateType   CertificateType @default(COURSE)
-  stageLevel        Int?            // for STAGE type certificates (1-7)
-  stageLevelTitle   String?         // Seeker, Apprentice, etc.
-  issuedAt          DateTime        @default(now())
-  certificateUrl    String?
-  
-  // Accredible Integration
-  accredibleId      String?         @unique // Credential ID from Accredible
-  verificationUrl   String?         // Public verification link
-  credentialData    String?         @db.Text // JSON with additional metadata
-  
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course            Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-  @@index([userId, certificateType])
-  @@index([accredibleId])
-}
-
 enum CertificateType {
   COURSE
   STAGE
   LEVEL
   SPECIAL
-}
-
-model ForumPost {
-  id        String      @id @default(cuid())
-  title     String
-  content   String      @db.Text
-  userId    String
-  courseId  String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  replies   ForumReply[]
-}
-
-model ForumReply {
-  id        String    @id @default(cuid())
-  content   String    @db.Text
-  userId    String
-  postId    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-}
-
-// Gamification Models
-
-model UserGamification {
-  id              String           @id @default(cuid())
-  userId          String           @unique
-  totalXP         Int              @default(0)
-  currentLevel    Int              @default(1)
-  currentStage    Int              @default(1) // 1-7 (Seeker to Sage)
-  stageTitle      String           @default("Seeker")
-  streakDays      Int              @default(0)
-  lastActiveDate  DateTime         @default(now())
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Badge {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  description String
-  iconName    String      // Lucide icon name
-  category    BadgeCategory
-  xpReward    Int         @default(0)
-  rarity      BadgeRarity @default(COMMON)
-  criteria    String      @db.Text // JSON string with unlock criteria
-  createdAt   DateTime    @default(now())
-
-  userBadges  UserBadge[]
 }
 
 enum BadgeCategory {
@@ -391,230 +784,9 @@ enum BadgeRarity {
   LEGENDARY
 }
 
-model UserBadge {
-  id        String   @id @default(cuid())
-  userId    String
-  badgeId   String
-  earnedAt  DateTime @default(now())
-  progress  Int      @default(100) // for progressive badges
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, badgeId])
-}
-
-model Skill {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String
-  iconName    String    // Lucide icon name
-  category    String
-  parentSkillId String? // for skill tree hierarchy
-  moduleIds   String[]  // modules that contribute to this skill
-  requiredXP  Int       @default(100)
-  orderIndex  Int       @default(0)
-  createdAt   DateTime  @default(now())
-
-  parentSkill Skill?           @relation("SkillHierarchy", fields: [parentSkillId], references: [id])
-  childSkills Skill[]          @relation("SkillHierarchy")
-  progress    SkillProgress[]
-}
-
-model SkillProgress {
-  id          String   @id @default(cuid())
-  userId      String
-  skillId     String
-  xpEarned    Int      @default(0)
-  isUnlocked  Boolean  @default(false)
-  isMastered  Boolean  @default(false)
-  lastPracticed DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, skillId])
-}
-
-model Checkpoint {
-  id          String   @id @default(cuid())
-  moduleId    String
-  name        String
-  description String
-  orderIndex  Int
-  xpReward    Int      @default(50)
-  requiredScore Int    @default(70) // percentage
-  createdAt   DateTime @default(now())
-
-  userCheckpoints UserCheckpoint[]
-}
-
-model UserCheckpoint {
-  id            String    @id @default(cuid())
-  userId        String
-  checkpointId  String
-  isCompleted   Boolean   @default(false)
-  score         Int?      // percentage
-  attempts      Int       @default(0)
-  completedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  checkpoint    Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, checkpointId])
-}
-
-model MasteryRecord {
-  id              String   @id @default(cuid())
-  userId          String
-  moduleId        String
-  masteryLevel    Int      @default(0) // 0-100
-  assessmentScore Int      @default(0)
-  timeInvested    Int      @default(0) // in minutes
-  practiceCount   Int      @default(0)
-  lastPracticed   DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, moduleId])
-}
-
-model StageRequirement {
-  id            String   @id @default(cuid())
-  stage         Int      // 1-7
-  title         String   // Seeker, Apprentice, etc.
-  description   String   @db.Text
-  requiredXP    Int
-  requiredBadges String[] // badge IDs
-  requiredSkills String[] // skill IDs at mastery level
-  capstoneModuleId String? // final challenge module
-  createdAt     DateTime @default(now())
-
-  @@unique([stage])
-}
-
-// Token System
-
-model TokenTransaction {
-  id          String   @id @default(cuid())
-  userId      String
-  amount      Int
-  tokenType   TokenType @default(SAGE)
-  reason      String
-  metadata    String?  @db.Text // JSON
-  createdAt   DateTime @default(now())
-
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-}
-
 enum TokenType {
   SAGE
   REFLECTION
-}
-
-model TokenBalance {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  sageTokens      Int      @default(0)
-  reflectionTokens Int     @default(0)
-  lifetimeTokens  Int      @default(0)
-  lastUpdated     DateTime @default(now())
-
-  @@index([userId])
-}
-
-// ============================================
-// SAGE-D Measured Learning Economy Models
-// ============================================
-
-// Five SAGE-D Pillars Configuration
-model Pillar {
-  id                    String   @id @default(cuid())
-  code                  String   @unique // S, A, G, E, D
-  name                  String   // Symbolic-Relationality, etc.
-  description           String   @db.Text
-  irreplaceabilityMultiplier Float // IM value (2.7 - 3.0)
-  examples              String[] // Example activities
-  orderIndex            Int
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  activities            Activity[]
-}
-
-// Learning Paths (Educator vs Technologist)
-model LearningPath {
-  id                    String   @id @default(cuid())
-  code                  String   @unique // educator, technologist
-  name                  String   // Educator Path (Griot → Scholar), etc.
-  description           String   @db.Text
-  pathWeightMultiplier  Float    // PWM value (+10-15% bonus = 1.10-1.15)
-  focusAreas            String[] // Teaching, mentoring, coding, etc.
-  createdAt             DateTime @default(now())
-
-  userPaths             UserLearningPath[]
-}
-
-// User's chosen learning path
-model UserLearningPath {
-  id              String        @id @default(cuid())
-  userId          String
-  pathId          String
-  isPrimary       Boolean       @default(true)
-  selectedAt      DateTime      @default(now())
-
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  path            LearningPath  @relation(fields: [pathId], references: [id])
-
-  @@unique([userId, pathId])
-}
-
-// Activity Categories (Teaching, Building, Mentoring, etc.)
-model ActivityCategory {
-  id              String   @id @default(cuid())
-  name            String   @unique
-  description     String
-  basePoints      Int      @default(10) // Base points per hour/activity
-  iconName        String   // Lucide icon
-  pillars         String[] // Array of pillar codes this relates to
-  createdAt       DateTime @default(now())
-
-  activities      Activity[]
-}
-
-// User Activities (Logged Contributions)
-model Activity {
-  id              String            @id @default(cuid())
-  userId          String
-  categoryId      String
-  pillarId        String
-  title           String
-  description     String            @db.Text
-  activityType    ActivityType
-  hoursSpent      Float             @default(0)
-  reach           Int?              // Number of people impacted
-  evidence        String?           @db.Text // URLs, photos, documents
-  metadata        String?           @db.Text // JSON for additional data
-  status          ActivityStatus    @default(PENDING)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  user            User              @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
-  category        ActivityCategory  @relation(fields: [categoryId], references: [id])
-  pillar          Pillar            @relation(fields: [pillarId], references: [id])
-  contributions   Contribution[]
-  verifications   Verification[]
-
-  @@index([userId, status])
-  @@index([createdAt])
 }
 
 enum ActivityType {
@@ -639,45 +811,6 @@ enum ActivityStatus {
   IN_REVIEW
 }
 
-// Calculated Contributions (SVU Scores)
-model Contribution {
-  id                    String   @id @default(cuid())
-  activityId            String
-  userId                String
-  basePoints            Float    // Raw base points
-  irreplaceabilityMultiplier Float // IM from pillar
-  impactMultiplier      Float    // XM (0.5 - 2.0)
-  pathWeightMultiplier  Float    // PWM from learning path
-  verificationMultiplier Float   @default(0.8) // VM (0.8 self-reported, 1.0 verified)
-  svuEarned             Float    // Final calculated SVU
-  calculatedAt          DateTime @default(now())
-  
-  activity              Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  user                  User     @relation("UserContributions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([calculatedAt])
-}
-
-// Community Verification
-model Verification {
-  id                String              @id @default(cuid())
-  activityId        String
-  verifierId        String?             // User who verified
-  verificationType  VerificationType
-  status            VerificationStatus  @default(PENDING)
-  evidence          String?             @db.Text // Organization letter, certificate, etc.
-  notes             String?             @db.Text
-  impactScore       Float?              // Suggested XM value
-  submittedAt       DateTime            @default(now())
-  reviewedAt        DateTime?
-  
-  activity          Activity            @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  verifier          User?               @relation("VerifierActivities", fields: [verifierId], references: [id])
-
-  @@index([status])
-}
-
 enum VerificationType {
   SELF_REPORTED
   PEER_REVIEW
@@ -694,61 +827,6 @@ enum VerificationStatus {
   NEEDS_MORE_INFO
 }
 
-// SVU Balance (User's current SVU holdings)
-model SVUBalance {
-  id                  String   @id @default(cuid())
-  userId              String   @unique
-  totalSVU            Float    @default(0)
-  availableSVU        Float    @default(0) // SVU not yet used for earn-down
-  usedSVU             Float    @default(0) // SVU applied to fees
-  verifiedSVU         Float    @default(0) // SVU eligible for token conversion
-  lifetimeSVU         Float    @default(0)
-  lastUpdated         DateTime @default(now())
-
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-// Earn-Down Records (Fee Reductions)
-model EarnDownRecord {
-  id                String   @id @default(cuid())
-  userId            String
-  courseId          String
-  originalPrice     Float    // ₦100,000
-  svuApplied        Float    // Amount of SVU used
-  conversionRate    Float    @default(100) // 1 SVU = ₦100
-  discountAmount    Float    // svuApplied × conversionRate
-  finalPrice        Float    // originalPrice - discountAmount
-  maxDiscountPercent Float   @default(70) // Max 70% of price via SVU
-  appliedAt         DateTime @default(now())
-  expiresAt         DateTime? // Course expiration = final payment date
-
-  user              User     @relation("UserEarnDowns", fields: [userId], references: [id], onDelete: Cascade)
-  course            Course   @relation("CourseEarnDowns", fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@index([userId, courseId])
-}
-
-// $SAGED Token Integration
-model SAGEDToken {
-  id                  String            @id @default(cuid())
-  userId              String
-  amount              Float             @default(0)
-  sourceType          TokenSourceType   
-  sourceActivityId    String?           // Reference to activity
-  conversionRate      Float             @default(1.0) // 1 verified SVU = 1 token
-  eligibilityPercent  Float             @default(100) // Conversion eligibility %
-  mintedAt            DateTime          @default(now())
-  walletAddress       String?
-  txHash              String?           // Blockchain transaction hash
-
-  user                User              @relation("UserSAGEDTokens", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([mintedAt])
-}
-
 enum TokenSourceType {
   ACADEMIC
   TECHNICAL
@@ -757,121 +835,12 @@ enum TokenSourceType {
   ROUTINE
 }
 
-// AI-Age Resilience Tracking
-model ResilienceScore {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  overallScore          Float    @default(0) // 0-100
-  symbolicScore         Float    @default(0)
-  adaptiveScore         Float    @default(0)
-  governanceScore       Float    @default(0)
-  equityScore           Float    @default(0)
-  defensiveScore        Float    @default(0)
-  automationRiskLevel   String   @default("MODERATE") // LOW, MODERATE, HIGH
-  lastCalculated        DateTime @default(now())
-  trendDirection        String?  // IMPROVING, STABLE, DECLINING
-
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-// Adaptation Reports (Annual AI adjustments)
-model AdaptationReport {
-  id                  String   @id @default(cuid())
-  year                Int
-  automationTrends    String   @db.Text // JSON data
-  pillarAdjustments   String   @db.Text // JSON with +/- % changes
-  skillRecommendations String  @db.Text // JSON
-  generatedAt         DateTime @default(now())
-
-  @@unique([year])
-}
-
-// Community Impact Hours (Volunteer Work)
-model CommunityImpact {
-  id                String   @id @default(cuid())
-  userId            String
-  activityId        String   @unique
-  impactCategory    ImpactCategory
-  verifiedHours     Float
-  organizationName  String?
-  organizationLetter String? // URL to verification document
-  impactReach       Int?     // Number of people helped
-  sustainabilityScore Float? // Long-term impact measure
-  recordedAt        DateTime @default(now())
-
-  user              User     @relation("UserCommunityImpacts", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([impactCategory])
-}
-
 enum ImpactCategory {
   COMMUNITY_SERVICE
   FAITH_BASED
   NGO_NONPROFIT
   CIVIC_ENGAGEMENT
   CULTURAL_PRESERVATION
-}
-
-// ============================================
-// Blocks Lab (Visual Programming) Models
-// ============================================
-
-model BlocksLesson {
-  id               String   @id @default(cuid())
-  slug             String   @unique
-  title            String
-  description      String?  @db.Text
-  instructions     String?  @db.Text // Lesson instructions/rubric
-  starterWorkspace Json?    // Blockly starter workspace (JSON)
-  stageConfig      Json?    // Canvas size, sprites/images, sounds config
-  blockConfig      Json?    // Allowed blocks / toolbox definition
-  orderIndex       Int      @default(0)
-  isPublished      Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  projects         BlocksProject[]
-  submissions      BlocksSubmission[]
-}
-
-model BlocksProject {
-  id            String        @id @default(cuid())
-  lessonId      String
-  userId        String
-  workspace     Json          // Blockly workspace state (JSON)
-  generatedCode String?       @db.Text // Snapshot of generated commands/JS
-  status        BlocksProjectStatus @default(DRAFT)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  lesson        BlocksLesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  submissions   BlocksSubmission[]
-
-  @@unique([lessonId, userId]) // one active project per lesson per student
-}
-
-model BlocksSubmission {
-  id           String                @id @default(cuid())
-  lessonId     String
-  projectId    String
-  userId       String
-  reflection   String?               @db.Text // Student reflections/notes
-  feedback     String?               @db.Text // Teacher feedback
-  grade        Int?
-  status       BlocksSubmissionStatus @default(SUBMITTED)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-
-  lesson       BlocksLesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  project      BlocksProject         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([lessonId])
-  @@index([userId])
 }
 
 enum BlocksProjectStatus {
@@ -885,82 +854,9 @@ enum BlocksSubmissionStatus {
   RETURNED
 }
 
-// ==========================================
-// Young Sages Cohort Application System
-// ==========================================
-
 enum ApplicationStatus {
   PENDING
   ACCEPTED
   WAITLISTED
   REJECTED
-}
-
-model YoungSagesApplication {
-  id                    String            @id @default(cuid())
-  
-  // Identity & Contact
-  childFirstName        String
-  childLastName         String
-  childAge              Int
-  guardianName          String
-  guardianEmail         String
-  guardianPhone         String?
-  country               String
-  timezone              String?
-  
-  // Access & Setup
-  hasComputer           Boolean           @default(true)
-  hasInternet           Boolean           @default(true)
-  accessNotes           String?           @db.Text
-  
-  // SAGE-D Pillars (Self-Assessment 1-5 scale)
-  selfAwareness         Int               // S - Self-Awareness
-  agency                Int               // A - Agency  
-  growth                Int               // G - Growth Mindset
-  ethics                Int               // E - Ethics & Empathy
-  design                Int               // D - Design Thinking
-  
-  // Motivation
-  whyJoin               String            @db.Text
-  priorExperience       String?           @db.Text
-  learningGoals         String?           @db.Text
-  
-  // Consent & Confirmation
-  parentalConsent       Boolean           @default(false)
-  mediaConsent          Boolean           @default(false)
-  rulesAccepted         Boolean           @default(false)
-  
-  // Admin fields
-  status                ApplicationStatus @default(PENDING)
-  adminNotes            String?           @db.Text
-  needsEmailFollowup    Boolean           @default(true)
-  emailSentAt           DateTime?
-  
-  // Timestamps
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  reviewedAt            DateTime?
-  reviewedBy            String?           // Admin user ID who reviewed
-  
-  @@index([status])
-  @@index([guardianEmail])
-  @@index([createdAt])
-}
-
-model NewsletterSubscriber {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  firstName     String?
-  source        String?  // e.g., "young-sages", "social-media", "website"
-  interests     String[] // e.g., ["young-sages", "ai-education", "coding"]
-  isVerified    Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  unsubscribedAt DateTime?
-  
-  @@index([email])
-  @@index([source])
-  @@index([createdAt])
 }

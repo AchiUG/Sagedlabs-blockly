@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Square, RotateCcw, Save, Send, Loader2 } from 'lucide-react';
+import { Play, Square, RotateCcw, Save, Send, Loader2, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface LabToolbarProps {
   isRunning: boolean;
@@ -10,9 +12,10 @@ interface LabToolbarProps {
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
-  onSave: () => void;
+  onSave: (workspace?: any, commands?: any[]) => void;
   onSubmit: () => void;
   lastSaved?: Date | null;
+  nextLessonSlug: string | null;
 }
 
 export default function LabToolbar({
@@ -25,7 +28,14 @@ export default function LabToolbar({
   onSave,
   onSubmit,
   lastSaved,
+  nextLessonSlug,
 }: LabToolbarProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-2">
       <div className="flex items-center gap-2">
@@ -63,7 +73,7 @@ export default function LabToolbar({
         </Button>
 
         {/* Save status */}
-        {lastSaved && (
+        {mounted && lastSaved && (
           <span className="text-xs text-gray-500 ml-2">
             Saved {lastSaved.toLocaleTimeString()}
           </span>
@@ -71,9 +81,22 @@ export default function LabToolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Next Lesson Button (only if submitted and next lesson exists) */}
+        {isSubmitted && nextLessonSlug && (
+          <Link href={`/learn/${nextLessonSlug}`}>
+            <Button
+              className="gap-1 bg-blue-600 hover:bg-blue-700"
+              size="sm"
+            >
+              Next Lesson
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        )}
+
         {/* Save button */}
         <Button
-          onClick={onSave}
+          onClick={() => onSave()}
           variant="outline"
           size="sm"
           className="gap-1"

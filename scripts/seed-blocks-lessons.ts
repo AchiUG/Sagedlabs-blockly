@@ -27,7 +27,14 @@ const defaultToolbox = {
         { kind: 'block', type: 'saged_move_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
         { kind: 'block', type: 'saged_set_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'saged_set_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
-        { kind: 'block', type: 'saged_go_to' },
+        {
+          kind: 'block',
+          type: 'saged_go_to',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+          },
+        },
         { kind: 'block', type: 'saged_bounce' },
       ],
     },
@@ -168,7 +175,14 @@ const leukMotionToolbox = {
         { kind: 'block', type: 'saged_move_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
         { kind: 'block', type: 'saged_set_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'saged_set_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
-        { kind: 'block', type: 'saged_go_to' },
+        {
+          kind: 'block',
+          type: 'saged_go_to',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+          },
+        },
       ],
     },
     {
@@ -270,7 +284,14 @@ const leukFullToolbox = {
         { kind: 'block', type: 'saged_move_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
         { kind: 'block', type: 'saged_set_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'saged_set_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
-        { kind: 'block', type: 'saged_go_to' },
+        {
+          kind: 'block',
+          type: 'saged_go_to',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+          },
+        },
         { kind: 'block', type: 'saged_bounce' },
       ],
     },
@@ -352,6 +373,18 @@ In this lesson, you'll create your first program.
 - Make it say different things`,
       stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: simpleToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 1,
       isPublished: true,
     },
@@ -389,6 +422,18 @@ In this lesson, you'll make your character move with the keyboard.
 - Add diagonal movement with W, A, S, D keys`,
       stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: defaultToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 2,
       isPublished: true,
     },
@@ -421,6 +466,18 @@ Your character should move across the screen and bounce when it hits the edge.
 - Make it move in both X and Y directions`,
       stageConfig: { width: 480, height: 360, spriteColor: '#4C97FF' },
       blockConfig: defaultToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 3,
       isPublished: true,
     },
@@ -431,7 +488,9 @@ Your character should move across the screen and bounce when it hits the edge.
   // Lesson 4: Interactive Story
   const lesson4 = await prisma.blocksLesson.upsert({
     where: { slug: 'interactive-story' },
-    update: {},
+    update: {
+      blockConfig: defaultToolbox,
+    },
     create: {
       slug: 'interactive-story',
       title: 'Interactive Story',
@@ -455,6 +514,18 @@ Create an interactive experience where your character responds to different keys
 - Add color changes to show different moods`,
       stageConfig: { width: 480, height: 360, spriteColor: '#9966FF' },
       blockConfig: defaultToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 4,
       isPublished: true,
     },
@@ -497,6 +568,18 @@ That's an IF-THEN rule in action!
 **Bonus:** Change the message to make Leuk say something funny!`,
       stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
       blockConfig: leukBeginnerToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 10,
       isPublished: true,
     },
@@ -507,7 +590,21 @@ That's an IF-THEN rule in action!
   // Young Sages Lesson 2: Leuk Explores
   const ysLesson2 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-explores' },
-    update: {},
+    update: {
+      blockConfig: leukMotionToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
+    },
     create: {
       slug: 'leuk-explores',
       title: 'Leuk Explores the Savanna',
@@ -540,6 +637,30 @@ Press arrow keys to move Leuk yourself! Use **"On Key Pressed"** blocks.
 **Remember:** Click **Save** often!`,
       stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
       blockConfig: leukMotionToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 11,
       isPublished: true,
     },
@@ -579,6 +700,18 @@ Limits (like the edge) aren't bad - they make interesting patterns!
 What happens if you make Leuk move by 20 instead of 5? (He moves faster!)`,
       stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
       blockConfig: leukBounceToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 12,
       isPublished: true,
     },
@@ -589,7 +722,9 @@ What happens if you make Leuk move by 20 instead of 5? (He moves faster!)`,
   // Young Sages Lesson 4: Leuk Litter Detector
   const ysLesson4 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-litter-detector' },
-    update: {},
+    update: {
+      blockConfig: leukFullToolbox,
+    },
     create: {
       slug: 'leuk-litter-detector',
       title: 'Leuk the Litter Detective',
@@ -623,6 +758,18 @@ AI systems do exactly this - patrol, detect, and alert!
 - Make him count how many pieces of "litter" he finds`,
       stageConfig: { width: 480, height: 360, spriteColor: '#228B22' },
       blockConfig: leukFullToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 13,
       isPublished: true,
     },
@@ -680,6 +827,18 @@ This is YOUR project. Use everything you've learned to build something meaningfu
 You think like Leuk, observe like a scientist, and build like a programmer!`,
       stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: leukFullToolbox,
+      starterWorkspace: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'saged_on_start',
+              x: 50,
+              y: 50,
+            },
+          ],
+        },
+      },
       orderIndex: 14,
       isPublished: true,
     },

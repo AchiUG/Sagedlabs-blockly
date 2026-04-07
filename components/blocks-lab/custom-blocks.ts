@@ -7,6 +7,11 @@ export function defineCustomBlocks(Blockly: any) {
     return;
   }
   
+  // Check if blocks are already defined to prevent "overwrite" warnings and UI jitter
+  if (Blockly.Blocks['saged_on_start']) {
+    return;
+  }
+
   // Use common namespace for Blockly utilities
   const { FieldDropdown } = Blockly;
   
@@ -360,12 +365,45 @@ function blockToCommand(block: any): any {
         actions: getStatementCommands(block, 'DO'),
       };
 
+    // Sensing Blocks
+    case 'saged_x_position':
+      return { type: 'X_POSITION' };
+
+    case 'saged_y_position':
+      return { type: 'Y_POSITION' };
+
+    case 'saged_touching_edge':
+      return { type: 'TOUCHING_EDGE' };
+
     // Built-in Blockly blocks
     case 'math_number':
-      return block.getFieldValue('NUM');
+      const val = block.getFieldValue('NUM');
+      return isNaN(parseFloat(val)) ? 0 : Number(val);
+
+    case 'math_arithmetic':
+      return {
+        type: 'ARITHMETIC',
+        op: block.getFieldValue('OP'),
+        a: getInputValue(block, 'A', 0),
+        b: getInputValue(block, 'B', 0),
+      };
+
+    case 'math_random_int':
+      return {
+        type: 'RANDOM_INT',
+        from: getInputValue(block, 'FROM', 1),
+        to: getInputValue(block, 'TO', 10),
+      };
 
     case 'text':
       return block.getFieldValue('TEXT');
+
+    case 'text_join':
+      const textActions = [];
+      for (let i = 0; i < (block as any).itemCount_; i++) {
+        textActions.push(getInputValue(block, 'ADD' + i, ''));
+      }
+      return { type: 'TEXT_JOIN', parts: textActions };
 
     case 'controls_if':
       return {

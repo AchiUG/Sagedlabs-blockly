@@ -8,8 +8,9 @@ import CourseLearningPage from '@/components/pages/course-learning-page';
 export default async function CourseLearnPage({
   params,
 }: {
-  params: { courseId: string };
+  params: Promise<{ courseId: string }>;
 }) {
+  const { courseId } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -18,7 +19,7 @@ export default async function CourseLearnPage({
 
   // Fetch course with all modules and lessons
   const course = await prisma.course.findUnique({
-    where: { id: params.courseId },
+    where: { id: courseId },
     include: {
       modules: {
         include: {
@@ -47,12 +48,12 @@ export default async function CourseLearnPage({
   const enrollment = await prisma.enrollment.findFirst({
     where: {
       userId: session.user.id,
-      courseId: params.courseId,
+      courseId: courseId,
     },
   });
 
   if (!enrollment) {
-    redirect(`/courses/${params.courseId}`);
+    redirect(`/courses/${courseId}`);
   }
 
   // Get user progress
@@ -61,7 +62,7 @@ export default async function CourseLearnPage({
       userId: session.user.id,
       lesson: {
         module: {
-          courseId: params.courseId,
+          courseId: courseId,
         },
       },
     },

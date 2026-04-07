@@ -8,12 +8,13 @@ import CourseContentManagement from '@/components/admin/course-content-managemen
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     courseId: string;
-  };
+  }>;
 }
 
 export default async function CourseContentPage({ params }: PageProps) {
+  const { courseId } = await params;
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -27,7 +28,7 @@ export default async function CourseContentPage({ params }: PageProps) {
   }
 
   const course = await prisma.course.findUnique({
-    where: { id: params.courseId },
+    where: { id: courseId },
     include: {
       instructor: {
         select: {

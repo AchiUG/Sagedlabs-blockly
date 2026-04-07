@@ -217,8 +217,15 @@ async function main() {
   console.log('✅ Modules and lessons created');
 
   // Create enrollment for test user
-  await prisma.enrollment.create({
-    data: {
+  await prisma.enrollment.upsert({
+    where: {
+      userId_courseId: {
+        userId: testUser.id,
+        courseId: course1.id,
+      },
+    },
+    update: {},
+    create: {
       userId: testUser.id,
       courseId: course1.id,
       status: 'ACTIVE',

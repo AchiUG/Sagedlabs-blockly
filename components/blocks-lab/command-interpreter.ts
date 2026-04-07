@@ -45,6 +45,7 @@ export class CommandInterpreter {
   private foreverLoops: any[][];
   private startActions: any[][];
   private animationFrame: number | null = null;
+  private onUpdate: ((state: StageState) => void) | null = null;
 
   constructor(commands: any[], state: StageState) {
     this.commands = commands;
@@ -57,6 +58,7 @@ export class CommandInterpreter {
 
   private parseCommands() {
     for (const cmd of this.commands) {
+      if (!cmd) continue;
       switch (cmd.type) {
         case 'ON_START':
           this.startActions.push(cmd.actions || []);
@@ -75,21 +77,21 @@ export class CommandInterpreter {
     }
   }
 
-  start(onUpdate: (state: StageState) => void) {
+  async start(onUpdate: (state: StageState) => void) {
     this.state.running = true;
+    this.onUpdate = onUpdate;
     
-    // Execute start actions
-    for (const actions of this.startActions) {
-      this.executeActions(actions);
-    }
-    onUpdate(this.state);
+    // Run all START scripts in parallel
+    this.startActions.forEach(actions => this.executeActions(actions));
 
-    // Main loop
-    const loop = () => {
+    // Start the game loop for FOREVER scripts and updates
+    const loop = async () => {
       if (!this.state.running) return;
 
-      // Execute forever loops
+      // Handle forever loops (these run continuously in the background)
+      // Note: In a real engine, we'd throttle these or make them async too
       for (const actions of this.foreverLoops) {
+        // Run forever loops without awaiting to not block the main frame
         this.executeActions(actions);
       }
 
@@ -102,7 +104,7 @@ export class CommandInterpreter {
         }
       }
 
-      onUpdate(this.state);
+      this.onUpdate?.(this.state);
       this.animationFrame = requestAnimationFrame(loop);
     };
 
@@ -121,9 +123,7 @@ export class CommandInterpreter {
     this.state.pressedKeys.add(code);
     const handlers = this.eventHandlers.get(code);
     if (handlers) {
-      for (const actions of handlers) {
-        this.executeActions(actions);
-      }
+      handlers.forEach(actions => this.executeActions(actions));
     }
   }
 
@@ -131,41 +131,44 @@ export class CommandInterpreter {
     this.state.pressedKeys.delete(code);
   }
 
-  private executeActions(actions: any[]) {
+  private async executeActions(actions: any[]) {
+    if (!this.state.running) return;
+    
     const sprite = this.state.sprites.main;
 
     for (const action of actions) {
+      if (!this.state.running) break;
       if (!action || typeof action !== 'object') continue;
 
       switch (action.type) {
         case 'MOVE_X':
-          sprite.x += Number(action.value) || 0;
+          sprite.x += Number(this.evaluateCondition(action.value)) || 0;
           break;
         case 'MOVE_Y':
-          sprite.y -= Number(action.value) || 0; // Invert Y for screen coords
+          sprite.y -= Number(this.evaluateCondition(action.value)) || 0;
           break;
         case 'SET_X':
-          sprite.x = Number(action.value) || 0;
+          sprite.x = (this.state.width / 2) + (Number(this.evaluateCondition(action.value)) || 0);
           break;
         case 'SET_Y':
-          sprite.y = this.state.height - (Number(action.value) || 0); // Invert Y
+          sprite.y = (this.state.height / 2) - (Number(this.evaluateCondition(action.value)) || 0);
           break;
         case 'GO_TO':
-          sprite.x = Number(action.x) || 0;
-          sprite.y = this.state.height - (Number(action.y) || 0);
+          sprite.x = (this.state.width / 2) + (Number(this.evaluateCondition(action.x)) || 0);
+          sprite.y = (this.state.height / 2) - (Number(this.evaluateCondition(action.y)) || 0);
           break;
         case 'BOUNCE':
           this.bounceOnEdge(sprite);
           break;
         case 'SAY':
-          sprite.message = String(action.text || '');
-          sprite.messageTimer = 180; // ~3 seconds at 60fps
+          sprite.message = String(this.evaluateCondition(action.text) ?? '');
+          sprite.messageTimer = 180;
           break;
         case 'SET_COLOR':
           sprite.color = action.color || '#124734';
           break;
         case 'SET_SIZE':
-          sprite.size = Math.max(10, Math.min(500, Number(action.size) || 100));
+          sprite.size = Math.max(10, Math.min(500, Number(this.evaluateCondition(action.size)) || 100));
           break;
         case 'SHOW':
           sprite.visible = true;
@@ -173,23 +176,30 @@ export class CommandInterpreter {
         case 'HIDE':
           sprite.visible = false;
           break;
+        case 'WAIT':
+          const seconds = Number(this.evaluateCondition(action.seconds)) || 0;
+          await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+          break;
         case 'REPEAT':
-          const times = Number(action.times) || 1;
+          const times = Number(this.evaluateCondition(action.times)) || 1;
           for (let i = 0; i < times; i++) {
-            this.executeActions(action.actions || []);
+            if (!this.state.running) break;
+            await this.executeActions(action.actions || []);
           }
           break;
         case 'IF':
           if (this.evaluateCondition(action.condition)) {
-            this.executeActions(action.then || []);
-          } else {
-            this.executeActions(action.else || []);
+            await this.executeActions(action.then || []);
+          } else if (action.else) {
+            await this.executeActions(action.else || []);
           }
           break;
       }
+      
+      // Update UI after each step in a sequence
+      this.onUpdate?.(this.state);
     }
 
-    // Keep sprite in bounds
     this.constrainToBounds(sprite);
   }
 
@@ -211,19 +221,48 @@ export class CommandInterpreter {
     sprite.y = Math.max(halfSize, Math.min(this.state.height - halfSize, sprite.y));
   }
 
-  private evaluateCondition(condition: any): boolean {
+  private evaluateCondition(condition: any): any {
     if (typeof condition === 'boolean') return condition;
-    if (condition?.type === 'TOUCHING_EDGE') {
-      const sprite = this.state.sprites.main;
-      const halfSize = (sprite.size / 100) * 25;
-      return (
-        sprite.x <= halfSize ||
-        sprite.x >= this.state.width - halfSize ||
-        sprite.y <= halfSize ||
-        sprite.y >= this.state.height - halfSize
-      );
+    if (typeof condition === 'number') return condition;
+    if (typeof condition === 'string') return condition;
+    
+    if (!condition || typeof condition !== 'object') return false;
+
+    const sprite = this.state.sprites.main;
+    const halfSize = (sprite.size / 100) * 25;
+
+    switch (condition.type) {
+      case 'TOUCHING_EDGE':
+        return (
+          sprite.x <= halfSize ||
+          sprite.x >= this.state.width - halfSize ||
+          sprite.y <= halfSize ||
+          sprite.y >= this.state.height - halfSize
+        );
+      case 'ARITHMETIC':
+        const a = Number(this.evaluateCondition(condition.a));
+        const b = Number(this.evaluateCondition(condition.b));
+        switch (condition.op) {
+          case 'ADD': return a + b;
+          case 'MINUS': return a - b;
+          case 'MULTIPLY': return a * b;
+          case 'DIVIDE': return b === 0 ? 0 : a / b;
+          case 'POWER': return Math.pow(a, b);
+          default: return 0;
+        }
+      case 'RANDOM_INT':
+        const min = Math.min(Number(this.evaluateCondition(condition.from)), Number(this.evaluateCondition(condition.to)));
+        const max = Math.max(Number(this.evaluateCondition(condition.from)), Number(this.evaluateCondition(condition.to)));
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      case 'X_POSITION':
+        return sprite.x - (this.state.width / 2);
+      case 'Y_POSITION':
+        return (this.state.height / 2) - sprite.y;
+      case 'TEXT_JOIN':
+        return condition.parts.map((p: any) => this.evaluateCondition(p)).join('');
+      default:
+        return false;
     }
-    return false;
   }
 
   getState(): StageState {
