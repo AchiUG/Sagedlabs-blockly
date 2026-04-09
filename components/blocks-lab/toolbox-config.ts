@@ -71,8 +71,23 @@ export const defaultToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic' },
-        { kind: 'block', type: 'math_random_int' },
+        {
+          kind: 'block',
+          type: 'math_arithmetic',
+          inputs: {
+            A: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
+            B: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'logic_compare',
+          inputs: {
+            A: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
+            B: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
+          },
+        },
+        { kind: 'block', type: 'math_random_int', inputs: { FROM: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, TO: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
       ],
     },
     {

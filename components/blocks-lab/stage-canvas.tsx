@@ -24,7 +24,25 @@ export default function StageCanvas({
     const x = sprite.x;
     const y = sprite.y;
 
+    // Apply bounce "squish" animation
+    let scaleX = 1;
+    let scaleY = 1;
+    if (sprite.bounceTimer > 0) {
+      // Create a "squish" effect (wider/shorter or thinner/taller)
+      const factor = Math.sin((sprite.bounceTimer / 15) * Math.PI) * 0.3;
+      scaleX = 1 + factor;
+      scaleY = 1 - factor;
+    }
+    
+    // Apply horizontal flip based on direction
+    if (sprite.directionX === -1) {
+      scaleX *= -1;
+    }
+
     ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scaleX, scaleY);
+    ctx.translate(-x, -y);
 
     // Draw sprite (simple character)
     ctx.fillStyle = sprite.color;

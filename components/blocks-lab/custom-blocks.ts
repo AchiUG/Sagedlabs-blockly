@@ -375,6 +375,14 @@ function blockToCommand(block: any): any {
     case 'saged_touching_edge':
       return { type: 'TOUCHING_EDGE' };
 
+    case 'logic_compare':
+      return {
+        type: 'COMPARE',
+        op: block.getFieldValue('OP'),
+        a: getInputValue(block, 'A', 0),
+        b: getInputValue(block, 'B', 0),
+      };
+
     // Built-in Blockly blocks
     case 'math_number':
       const val = block.getFieldValue('NUM');

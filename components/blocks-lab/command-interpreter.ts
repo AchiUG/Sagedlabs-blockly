@@ -8,6 +8,9 @@ export interface SpriteState {
   visible: boolean;
   message: string;
   messageTimer: number;
+  bounceTimer: number;
+  directionX: number;
+  directionY: number;
 }
 
 export interface StageState {
@@ -31,6 +34,9 @@ export function createInitialState(config?: any): StageState {
         visible: true,
         message: '',
         messageTimer: 0,
+        bounceTimer: 0,
+        directionX: 1,
+        directionY: 1,
       },
     },
     pressedKeys: new Set(),
@@ -103,6 +109,10 @@ export class CommandInterpreter {
           sprite.message = '';
         }
       }
+      
+      if (sprite.bounceTimer > 0) {
+        sprite.bounceTimer--;
+      }
 
       this.onUpdate?.(this.state);
       this.animationFrame = requestAnimationFrame(loop);
@@ -142,10 +152,10 @@ export class CommandInterpreter {
 
       switch (action.type) {
         case 'MOVE_X':
-          sprite.x += Number(this.evaluateCondition(action.value)) || 0;
+          sprite.x += (Number(this.evaluateCondition(action.value)) || 0) * (sprite.directionX || 1);
           break;
         case 'MOVE_Y':
-          sprite.y -= Number(this.evaluateCondition(action.value)) || 0;
+          sprite.y -= (Number(this.evaluateCondition(action.value)) || 0) * (sprite.directionY || 1);
           break;
         case 'SET_X':
           sprite.x = (this.state.width / 2) + (Number(this.evaluateCondition(action.value)) || 0);
@@ -205,13 +215,32 @@ export class CommandInterpreter {
 
   private bounceOnEdge(sprite: SpriteState) {
     const halfSize = (sprite.size / 100) * 25; // Assume 50px base sprite
+    let bounced = false;
     
-    if (sprite.x < halfSize || sprite.x > this.state.width - halfSize) {
-      // Reverse X direction - simplified bounce
-      sprite.x = Math.max(halfSize, Math.min(this.state.width - halfSize, sprite.x));
+    // Check horizontal bounce
+    if (sprite.x <= halfSize) {
+      sprite.x = halfSize;
+      sprite.directionX = 1;
+      bounced = true;
+    } else if (sprite.x >= this.state.width - halfSize) {
+      sprite.x = this.state.width - halfSize;
+      sprite.directionX = -1;
+      bounced = true;
     }
-    if (sprite.y < halfSize || sprite.y > this.state.height - halfSize) {
-      sprite.y = Math.max(halfSize, Math.min(this.state.height - halfSize, sprite.y));
+
+    // Check vertical bounce
+    if (sprite.y <= halfSize) {
+      sprite.y = halfSize;
+      sprite.directionY = -1; // Moving down now (Y increases down)
+      bounced = true;
+    } else if (sprite.y >= this.state.height - halfSize) {
+      sprite.y = this.state.height - halfSize;
+      sprite.directionY = 1; // Moving up now (Y decreases up)
+      bounced = true;
+    }
+
+    if (bounced) {
+      sprite.bounceTimer = 15;
     }
   }
 
@@ -254,6 +283,18 @@ export class CommandInterpreter {
         const min = Math.min(Number(this.evaluateCondition(condition.from)), Number(this.evaluateCondition(condition.to)));
         const max = Math.max(Number(this.evaluateCondition(condition.from)), Number(this.evaluateCondition(condition.to)));
         return Math.floor(Math.random() * (max - min + 1)) + min;
+      case 'COMPARE':
+        const valA = this.evaluateCondition(condition.a);
+        const valB = this.evaluateCondition(condition.b);
+        switch (condition.op) {
+          case 'EQ': return valA === valB;
+          case 'NEQ': return valA !== valB;
+          case 'LT': return valA < valB;
+          case 'LTE': return valA <= valB;
+          case 'GT': return valA > valB;
+          case 'GTE': return valA >= valB;
+          default: return false;
+        }
       case 'X_POSITION':
         return sprite.x - (this.state.width / 2);
       case 'Y_POSITION':

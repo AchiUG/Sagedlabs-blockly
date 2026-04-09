@@ -76,7 +76,15 @@ const defaultToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '⚖️ Logic',
+      colour: '#5C81A6',
+      contents: [
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
     },
     {
@@ -126,6 +134,15 @@ const simpleToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '⚖️ Logic',
+      colour: '#5C81A6',
+      contents: [
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
     },
   ],
@@ -207,6 +224,15 @@ const leukMotionToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '⚖️ Logic',
+      colour: '#5C81A6',
+      contents: [
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
     },
   ],
@@ -257,6 +283,15 @@ const leukBounceToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '⚖️ Logic',
+      colour: '#5C81A6',
+      contents: [
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
     },
   ],
@@ -332,6 +367,15 @@ const leukFullToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '⚖️ Logic',
+      colour: '#5C81A6',
+      contents: [
+        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
     },
     {
@@ -353,7 +397,10 @@ async function main() {
   // Lesson 1: Hello World
   const lesson1 = await prisma.blocksLesson.upsert({
     where: { slug: 'hello-world' },
-    update: {},
+    update: { 
+      blockConfig: simpleToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'hello-world',
       title: 'Hello World - Your First Program',
@@ -395,7 +442,10 @@ In this lesson, you'll create your first program.
   // Lesson 2: Move Around
   const lesson2 = await prisma.blocksLesson.upsert({
     where: { slug: 'move-around' },
-    update: {},
+    update: { 
+      blockConfig: defaultToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'move-around',
       title: 'Move Around - Keyboard Controls',
@@ -444,7 +494,10 @@ In this lesson, you'll make your character move with the keyboard.
   // Lesson 3: Animation
   const lesson3 = await prisma.blocksLesson.upsert({
     where: { slug: 'simple-animation' },
-    update: {},
+    update: { 
+      blockConfig: defaultToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'simple-animation',
       title: 'Simple Animation - Forever Loops',
@@ -490,6 +543,7 @@ Your character should move across the screen and bounce when it hits the edge.
     where: { slug: 'interactive-story' },
     update: {
       blockConfig: defaultToolbox,
+      isPublished: true,
     },
     create: {
       slug: 'interactive-story',
@@ -539,7 +593,10 @@ Create an interactive experience where your character responds to different keys
   // Young Sages Lesson 1: Leuk Says Hello
   const ysLesson1 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-says-hello' },
-    update: {},
+    update: { 
+      blockConfig: leukBeginnerToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'leuk-says-hello',
       title: 'Leuk Says Hello',
@@ -592,18 +649,7 @@ That's an IF-THEN rule in action!
     where: { slug: 'leuk-explores' },
     update: {
       blockConfig: leukMotionToolbox,
-      starterWorkspace: {
-        blocks: {
-          languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
-        },
-      },
+      isPublished: true,
     },
     create: {
       slug: 'leuk-explores',
@@ -671,7 +717,10 @@ Press arrow keys to move Leuk yourself! Use **"On Key Pressed"** blocks.
   // Young Sages Lesson 3: Leuk Bounces
   const ysLesson3 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-bounces' },
-    update: {},
+    update: { 
+      blockConfig: leukBounceToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'leuk-bounces',
       title: 'Leuk Bounces Around',
@@ -724,6 +773,7 @@ What happens if you make Leuk move by 20 instead of 5? (He moves faster!)`,
     where: { slug: 'leuk-litter-detector' },
     update: {
       blockConfig: leukFullToolbox,
+      isPublished: true,
     },
     create: {
       slug: 'leuk-litter-detector',
@@ -780,7 +830,10 @@ AI systems do exactly this - patrol, detect, and alert!
   // Young Sages Lesson 5: Capstone Project
   const ysLesson5 = await prisma.blocksLesson.upsert({
     where: { slug: 'capstone-project' },
-    update: {},
+    update: { 
+      blockConfig: defaultToolbox,
+      isPublished: true 
+    },
     create: {
       slug: 'capstone-project',
       title: 'Your Community Solution',
