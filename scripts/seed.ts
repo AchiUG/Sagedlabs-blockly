@@ -1,11 +1,21 @@
 
 import { PrismaClient } from '@prisma/client';
 import bcryptjs from 'bcryptjs';
+import { execSync } from 'child_process';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');
+  
+  // Run specialized seeders
+  console.log('🏗️ Running specialized seeders...');
+  try {
+    execSync('pnpm tsx --require dotenv/config scripts/seed-blocks-lessons.ts', { stdio: 'inherit' });
+    console.log('✅ Blocks lessons seeded');
+  } catch (err) {
+    console.warn('⚠️ Warning: seed-blocks-lessons.ts failed, continuing...');
+  }
 
   // Create admin user
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@sagedlabs.com';
