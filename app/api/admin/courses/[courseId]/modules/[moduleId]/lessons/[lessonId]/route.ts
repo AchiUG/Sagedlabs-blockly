@@ -1,13 +1,20 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type LessonRouteParams = {
+  courseId: string;
+  moduleId: string;
+  lessonId: string;
+};
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; lessonId: string } }
+  context: { params: Promise<LessonRouteParams> }
 ) {
+  const { courseId, moduleId, lessonId } = await context.params; // use as needed
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -18,7 +25,7 @@ export async function PUT(
     const { title, content, videoUrl, thumbnailUrl, duration } = body;
 
     const lesson = await prisma.lesson.update({
-      where: { id: params.lessonId },
+      where: { id: lessonId },
       data: {
         title,
         content,
@@ -40,8 +47,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; lessonId: string } }
+  context: { params: Promise<LessonRouteParams> }
 ) {
+  const { lessonId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -49,7 +58,7 @@ export async function DELETE(
     }
 
     await prisma.lesson.delete({
-      where: { id: params.lessonId }
+      where: { id: lessonId }
     });
 
     return NextResponse.json({ success: true });
