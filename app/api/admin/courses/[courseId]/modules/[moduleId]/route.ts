@@ -4,10 +4,17 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type ModuleRouteParams = {
+  courseId: string;
+  moduleId: string;
+};
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  context: { params: Promise<ModuleRouteParams> }
 ) {
+  const { moduleId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -18,7 +25,7 @@ export async function PUT(
     const { title, description } = body;
 
     const module = await prisma.module.update({
-      where: { id: params.moduleId },
+      where: { id: moduleId },
       data: {
         title,
         description
@@ -37,8 +44,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  context: { params: Promise<ModuleRouteParams> }
 ) {
+  const { moduleId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -47,12 +56,12 @@ export async function DELETE(
 
     // Delete all lessons in the module first
     await prisma.lesson.deleteMany({
-      where: { moduleId: params.moduleId }
+      where: { moduleId }
     });
 
     // Delete the module
     await prisma.module.delete({
-      where: { id: params.moduleId }
+      where: { id: moduleId }
     });
 
     return NextResponse.json({ success: true });

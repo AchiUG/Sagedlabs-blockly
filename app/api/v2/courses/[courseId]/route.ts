@@ -16,8 +16,9 @@ import { NotFoundError } from '@/lib/core/errors/app-error';
 // Note: Detailed curriculum (modules/lessons) only returned to authenticated users
 export const GET = asyncHandler(async (
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<{ courseId: string }> }
 ) => {
+  const { courseId } = await context.params;
   const courseService = getCourseService();
   
   // Check if user is authenticated (optional - doesn't throw if not authenticated)
@@ -28,7 +29,7 @@ export const GET = asyncHandler(async (
     // User not authenticated - will return limited course data
   }
   
-  const course = await courseService.getCourseWithDetails(params.courseId);
+  const course = await courseService.getCourseWithDetails(courseId);
   
   if (!course) {
     throw new NotFoundError('Course');
@@ -55,8 +56,9 @@ export const GET = asyncHandler(async (
 // PATCH /api/v2/courses/:courseId - Update course
 export const PATCH = asyncHandler(async (
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<{ courseId: string }> }
 ) => {
+  const { courseId } = await context.params;
   const authContext = await requireRole(['INSTRUCTOR', 'ADMIN']);
   
   const body = await request.json();
@@ -64,13 +66,13 @@ export const PATCH = asyncHandler(async (
 
   // Verify ownership for instructors
   if (authContext.role === 'INSTRUCTOR') {
-    const course = await courseService.getCourseById(params.courseId);
+    const course = await courseService.getCourseById(courseId);
     if (course?.instructorId !== authContext.userId) {
       throw new NotFoundError('Course');
     }
   }
 
-  const updatedCourse = await courseService.updateCourse(params.courseId, body);
+  const updatedCourse = await courseService.updateCourse(courseId, body);
 
   return ResponseBuilder.success(updatedCourse);
 });
@@ -78,21 +80,22 @@ export const PATCH = asyncHandler(async (
 // DELETE /api/v2/courses/:courseId - Delete course
 export const DELETE = asyncHandler(async (
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<{ courseId: string }> }
 ) => {
+  const { courseId } = await context.params;
   const authContext = await requireRole(['INSTRUCTOR', 'ADMIN']);
   
   const courseService = getCourseService();
 
   // Verify ownership for instructors
   if (authContext.role === 'INSTRUCTOR') {
-    const course = await courseService.getCourseById(params.courseId);
+    const course = await courseService.getCourseById(courseId);
     if (course?.instructorId !== authContext.userId) {
       throw new NotFoundError('Course');
     }
   }
 
-  await courseService.deleteCourse(params.courseId);
+  await courseService.deleteCourse(courseId);
 
   return ResponseBuilder.noContent();
 });

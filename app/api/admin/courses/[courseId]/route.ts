@@ -4,10 +4,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type CourseRouteParams = {
+  courseId: string;
+};
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<CourseRouteParams> }
 ) {
+  const { courseId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -24,7 +30,7 @@ export async function PUT(
     const { title, description, instructorId, price, duration, level, isPublished } = body;
 
     const course = await prisma.course.update({
-      where: { id: params.courseId },
+      where: { id: courseId },
       data: {
         title,
         description,
@@ -60,8 +66,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<CourseRouteParams> }
 ) {
+  const { courseId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -75,7 +83,7 @@ export async function DELETE(
     }
 
     await prisma.course.delete({
-      where: { id: params.courseId }
+      where: { id: courseId }
     });
 
     return NextResponse.json({ message: 'Course deleted successfully' });

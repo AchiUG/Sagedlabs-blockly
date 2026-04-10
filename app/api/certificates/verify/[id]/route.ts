@@ -3,12 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
 // GET /api/certificates/verify/:id - Verify a certificate by Accredible ID
+type VerifyCertificateParams = {
+  id: string;
+};
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<VerifyCertificateParams> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     const certificate = await prisma.certificate.findUnique({
       where: { accredibleId: id },

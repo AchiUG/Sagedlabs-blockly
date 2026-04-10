@@ -5,10 +5,16 @@ import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 import bcryptjs from 'bcryptjs';
 
+type AdminUserRouteParams = {
+  userId: string;
+};
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<AdminUserRouteParams> }
 ) {
+  const { userId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -40,7 +46,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.userId },
+      where: { id: userId },
       data: updateData,
       include: {
         _count: {
@@ -62,8 +68,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<AdminUserRouteParams> }
 ) {
+  const { userId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -77,7 +85,7 @@ export async function DELETE(
     }
 
     await prisma.user.delete({
-      where: { id: params.userId }
+      where: { id: userId }
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

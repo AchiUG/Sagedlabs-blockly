@@ -4,10 +4,16 @@ import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
 // GET /api/blocks/lessons/[slug] - Get lesson metadata
+type BlocksLessonParams = {
+  slug: string;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<BlocksLessonParams> }
 ) {
+  const { slug } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -15,7 +21,7 @@ export async function GET(
     }
 
     const lesson = await prisma.blocksLesson.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: {
         id: true,
         slug: true,

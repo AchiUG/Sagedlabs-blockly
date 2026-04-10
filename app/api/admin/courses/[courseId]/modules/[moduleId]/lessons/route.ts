@@ -4,10 +4,17 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type LessonsRouteParams = {
+  courseId: string;
+  moduleId: string;
+};
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  context: { params: Promise<LessonsRouteParams> }
 ) {
+  const { moduleId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -25,7 +32,7 @@ export async function POST(
         thumbnailUrl,
         duration: duration ? parseInt(duration) : null,
         orderIndex: orderIndex ?? 0,
-        moduleId: params.moduleId
+        moduleId
       }
     });
 

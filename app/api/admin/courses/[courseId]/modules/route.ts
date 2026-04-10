@@ -4,10 +4,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type ModulesRouteParams = {
+  courseId: string;
+};
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<ModulesRouteParams> }
 ) {
+  const { courseId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || (session.user as any)?.role !== 'ADMIN') {
@@ -22,7 +28,7 @@ export async function POST(
         title,
         description,
         orderIndex: orderIndex ?? 0,
-        courseId: params.courseId
+        courseId
       }
     });
 

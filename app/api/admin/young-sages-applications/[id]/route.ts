@@ -11,10 +11,16 @@ const updateSchema = z.object({
   adminNotes: z.string().optional(),
 });
 
+type YoungSagesApplicationParams = {
+  id: string;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<YoungSagesApplicationParams> }
 ) {
+  const { id } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -23,7 +29,7 @@ export async function GET(
     }
     
     const application = await prisma.youngSagesApplication.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
     
     if (!application) {
@@ -42,8 +48,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<YoungSagesApplicationParams> }
 ) {
+  const { id } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -68,7 +76,7 @@ export async function PATCH(
       const acceptedCount = await prisma.youngSagesApplication.count({
         where: { 
           status: 'ACCEPTED',
-          id: { not: params.id } // Exclude current application
+          id: { not: id } // Exclude current application
         },
       });
       
@@ -93,7 +101,7 @@ export async function PATCH(
     }
     
     const application = await prisma.youngSagesApplication.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     });
     

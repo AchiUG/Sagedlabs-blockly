@@ -6,10 +6,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/db';
 
+type EnrollRouteParams = {
+  courseId: string;
+};
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  context: { params: Promise<EnrollRouteParams> }
 ) {
+  const { courseId } = await context.params;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -20,7 +26,6 @@ export async function POST(
       );
     }
 
-    const { courseId } = params;
     const userId = (session.user as any)?.id;
 
     // Check if course exists and is published
