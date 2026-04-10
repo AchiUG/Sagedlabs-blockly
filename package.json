@@ -34,7 +34,12 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed:safe": "tsx --require dotenv/config scripts/safe-seed.ts",
+    "db:seed:all": "tsx --require dotenv/config scripts/seed-all.ts",
+    "db:init": "prisma generate && prisma db push && tsx --require dotenv/config scripts/seed-all.ts"
   },
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/safe-seed.ts"
