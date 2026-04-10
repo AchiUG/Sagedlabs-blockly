@@ -695,18 +695,6 @@ Press arrow keys to move Leuk yourself! Use **"On Key Pressed"** blocks.
           ],
         },
       },
-      starterWorkspace: {
-        blocks: {
-          languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
-        },
-      },
       orderIndex: 11,
       isPublished: true,
     },
