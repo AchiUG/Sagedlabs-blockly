@@ -2,9 +2,10 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: process.env.NEXT_DIST_DIR || '.next',
-  output: process.env.NEXT_OUTPUT_MODE,
-  outputFileTracingRoot: path.join(__dirname, '../'),
+  distDir: '.next',
+  // Keep tracing anchored at the app root to avoid invalid
+  // build artifact lookups in serverless environments.
+  outputFileTracingRoot: path.join(__dirname),
   typescript: {
     ignoreBuildErrors: false,
   },
