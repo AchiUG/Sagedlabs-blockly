@@ -383,6 +383,23 @@ function blockToCommand(block: any): any {
         b: getInputValue(block, 'B', 0),
       };
 
+    case 'logic_operation':
+      return {
+        type: 'LOGIC_OPERATION',
+        op: block.getFieldValue('OP'),
+        a: getInputValue(block, 'A', true),
+        b: getInputValue(block, 'B', true),
+      };
+
+    case 'logic_negate':
+      return {
+        type: 'LOGIC_NEGATE',
+        bool: getInputValue(block, 'BOOL', false),
+      };
+
+    case 'logic_boolean':
+      return block.getFieldValue('BOOL') === 'TRUE';
+
     // Built-in Blockly blocks
     case 'math_number':
       const val = block.getFieldValue('NUM');

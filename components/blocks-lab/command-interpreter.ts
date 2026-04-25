@@ -83,6 +83,8 @@ export class CommandInterpreter {
     }
   }
 
+  private runningLoops: Set<number> = new Set();
+
   async start(onUpdate: (state: StageState) => void) {
     this.state.running = true;
     this.onUpdate = onUpdate;
@@ -90,15 +92,21 @@ export class CommandInterpreter {
     // Run all START scripts in parallel
     this.startActions.forEach(actions => this.executeActions(actions));
 
+    // Initialize forever loop tracking
+    const loopStates = this.foreverLoops.map(() => ({ running: false }));
+
     // Start the game loop for FOREVER scripts and updates
     const loop = async () => {
       if (!this.state.running) return;
 
-      // Handle forever loops (these run continuously in the background)
-      // Note: In a real engine, we'd throttle these or make them async too
-      for (const actions of this.foreverLoops) {
-        // Run forever loops without awaiting to not block the main frame
-        this.executeActions(actions);
+      // Handle forever loops
+      for (let i = 0; i < this.foreverLoops.length; i++) {
+        if (!loopStates[i].running) {
+          loopStates[i].running = true;
+          this.executeActions(this.foreverLoops[i]).then(() => {
+            loopStates[i].running = false;
+          });
+        }
       }
 
       // Update message timers
@@ -295,6 +303,12 @@ export class CommandInterpreter {
           case 'GTE': return valA >= valB;
           default: return false;
         }
+      case 'LOGIC_OPERATION':
+        const left = this.evaluateCondition(condition.a);
+        const right = this.evaluateCondition(condition.b);
+        return condition.op === 'AND' ? (left && right) : (left || right);
+      case 'LOGIC_NEGATE':
+        return !this.evaluateCondition(condition.bool);
       case 'X_POSITION':
         return sprite.x - (this.state.width / 2);
       case 'Y_POSITION':

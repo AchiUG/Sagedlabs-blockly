@@ -85,6 +85,9 @@ const defaultToolbox = {
       colour: '#5C81A6',
       contents: [
         { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
       ],
     },
     {
@@ -143,6 +146,9 @@ const simpleToolbox = {
       colour: '#5C81A6',
       contents: [
         { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
       ],
     },
   ],
@@ -233,6 +239,9 @@ const leukMotionToolbox = {
       colour: '#5C81A6',
       contents: [
         { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
       ],
     },
   ],
@@ -292,6 +301,9 @@ const leukBounceToolbox = {
       colour: '#5C81A6',
       contents: [
         { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
       ],
     },
   ],
@@ -349,6 +361,7 @@ const leukFullToolbox = {
       contents: [
         { kind: 'block', type: 'saged_wait', inputs: { SECONDS: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
         { kind: 'block', type: 'saged_repeat', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
+        { kind: 'block', type: 'controls_if' },
       ],
     },
     {
@@ -376,6 +389,9 @@ const leukFullToolbox = {
       colour: '#5C81A6',
       contents: [
         { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
       ],
     },
     {
