@@ -438,6 +438,27 @@ function blockToCommand(block: any): any {
         else: getStatementCommands(block, 'ELSE'),
       };
 
+    // Variable blocks
+    case 'variables_get':
+      return {
+        type: 'GET_VARIABLE',
+        name: block.getFieldValue('VAR'),
+      };
+
+    case 'variables_set':
+      return {
+        type: 'SET_VARIABLE',
+        name: block.getFieldValue('VAR'),
+        value: getInputValue(block, 'VALUE', 0),
+      };
+
+    case 'math_change':
+      return {
+        type: 'MATH_CHANGE',
+        name: block.getFieldValue('VAR'),
+        value: getInputValue(block, 'DELTA', 1),
+      };
+
     default:
       return null;
   }

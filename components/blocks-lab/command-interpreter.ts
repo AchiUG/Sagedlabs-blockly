@@ -17,6 +17,7 @@ export interface StageState {
   width: number;
   height: number;
   sprites: { [key: string]: SpriteState };
+  variables: { [key: string]: any };
   pressedKeys: Set<string>;
   running: boolean;
 }
@@ -39,6 +40,7 @@ export function createInitialState(config?: any): StageState {
         directionY: 1,
       },
     },
+    variables: {},
     pressedKeys: new Set(),
     running: false,
   };
@@ -212,6 +214,14 @@ export class CommandInterpreter {
             await this.executeActions(action.else || []);
           }
           break;
+        case 'SET_VARIABLE':
+          this.state.variables[action.name] = this.evaluateCondition(action.value);
+          break;
+        case 'MATH_CHANGE':
+          const currentVal = Number(this.state.variables[action.name]) || 0;
+          const changeVal = Number(this.evaluateCondition(action.value)) || 0;
+          this.state.variables[action.name] = currentVal + changeVal;
+          break;
       }
       
       // Update UI after each step in a sequence
@@ -315,6 +325,8 @@ export class CommandInterpreter {
         return (this.state.height / 2) - sprite.y;
       case 'TEXT_JOIN':
         return condition.parts.map((p: any) => this.evaluateCondition(p)).join('');
+      case 'GET_VARIABLE':
+        return this.state.variables[condition.name] ?? 0;
       default:
         return false;
     }
