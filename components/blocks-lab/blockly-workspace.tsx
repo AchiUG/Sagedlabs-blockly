@@ -224,11 +224,17 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       if (variableList.length > 0) {
+        // Use the most recently added or first variable as the default for the flyout blocks
+        const defaultVar = variableList[variableList.length - 1].name;
+
         // set variable block with math_number shadow
         content.push({
           kind: 'block',
           type: 'variables_set',
           gap: 8,
+          fields: {
+            VAR: defaultVar,
+          },
           inputs: {
             VALUE: {
               shadow: {
@@ -244,6 +250,9 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           kind: 'block',
           type: 'math_change',
           gap: 24,
+          fields: {
+            VAR: defaultVar,
+          },
           inputs: {
             DELTA: {
               shadow: {
@@ -254,7 +263,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           },
         });
 
-        // Add all existing variables
+        // Add all existing variables as getter blocks
         variableList.sort(Blockly.VariableModel.compareByName);
         for (const variable of variableList) {
           content.push({
