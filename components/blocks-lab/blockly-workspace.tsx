@@ -27,7 +27,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   const containerRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<any>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  const selectedCatRef = useRef<string | null>(null);
   const colorMapRef = useRef<Record<string, string>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [Blockly, setBlockly] = useState<any>(null);
@@ -38,22 +37,17 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   useImperativeHandle(ref, () => ({
     resetWorkspace: () => {
       if (workspaceRef.current && Blockly) {
-        // Clear and reload starter workspace
         workspaceRef.current.clear();
         if (starterWorkspace) {
           try {
-            // Ensure we are in a state that allows loading
             const wasReadOnly = workspaceRef.current.readOnly;
             if (wasReadOnly) workspaceRef.current.options.readOnly = false;
-            
             Blockly.serialization.workspaces.load(starterWorkspace, workspaceRef.current);
-            
             if (wasReadOnly) workspaceRef.current.options.readOnly = true;
           } catch (error) {
             console.error('Failed to reload starter workspace:', error);
           }
         }
-        // Force update parent immediately after reset
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
         const commands = workspaceToCommands(workspaceRef.current);
         if (onWorkspaceChange) {
@@ -67,7 +61,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     }
   }), [Blockly, starterWorkspace, onWorkspaceChange]);
 
-  // Load Blockly dynamically (client-side only)
+  // Load Blockly dynamically
   useEffect(() => {
     let mounted = true;
     const loadBlockly = async () => {
@@ -87,8 +81,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     return () => { mounted = false; };
   }, []);
 
-  // Restyle native Blockly toolbox categories so they fully highlight on click
-  // (same proven pattern used by story-builder)
+  // Restyle native Blockly toolbox categories
   const setupCategoryTabs = useCallback(() => {
     if (!containerRef.current) return;
     const cats = containerRef.current.querySelectorAll('.blocklyToolboxCategory');
@@ -102,7 +95,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       el.style.setProperty(prop, val, 'important');
     };
 
-    // Style the toolbox container
     if (toolbox) {
       forceStyle(toolbox, 'background', '#fafaf9');
       forceStyle(toolbox, 'border-right', '2px solid #e7e5e4');
@@ -121,7 +113,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       forceStyle(catContainer, 'width', '100%');
     }
 
-    // Capture each category's border-left colour (set by Blockly from toolbox config)
     const colorMap: Record<string, string> = {};
     cats.forEach((cat: Element) => {
       const el = cat as HTMLElement;
@@ -131,7 +122,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     });
     colorMapRef.current = colorMap;
 
-    // Helper to set !important inline styles
     const setI = (el: HTMLElement, prop: string, val: string) => {
       el.style.setProperty(prop, val, 'important');
     };
@@ -177,7 +167,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       if (icon) setI(icon, 'display', 'none');
     };
 
-    // Apply default unselected style
     cats.forEach((cat: Element) => styleTab(cat as HTMLElement, false));
 
     const applySelection = (selectedId: string | null) => {
@@ -187,28 +176,18 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       });
     };
 
-    // 1. Add click listeners for immediate visual feedback
     cats.forEach((cat: Element) => {
       const el = cat as HTMLElement;
-      el.addEventListener('click', () => {
-        // If we click an already selected category, Blockly might close it
-        // but we'll let the event listener handle the final state sync.
-        applySelection(el.id);
-      });
+      el.addEventListener('click', () => applySelection(el.id));
     });
 
-    // 2. Use Blockly's event system to track deselection (e.g. clicking workspace)
     if (workspaceRef.current) {
       const workspace = workspaceRef.current;
-      
       const onToolboxSelect = (event: any) => {
         if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
-          // Sync our UI with Blockly's internal selection
-          // newItem will be null if the flyout is closed
           applySelection(event.newItem || null);
         }
       };
-      
       workspace.addChangeListener(onToolboxSelect);
       (workspace as any)._toolboxListener = onToolboxSelect;
     }
@@ -220,7 +199,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   useEffect(() => {
     if (!Blockly || !containerRef.current) return;
 
-    // If workspace already exists, dispose it before re-injecting (handles prop changes)
     if (workspaceRef.current) {
       if ((workspaceRef.current as any)._toolboxListener) {
         workspaceRef.current.removeChangeListener((workspaceRef.current as any)._toolboxListener);
@@ -231,9 +209,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     defineCustomBlocks(Blockly);
 
-    // Register a custom flyout callback for variables to add shadow blocks
-    workspaceRef.current = new (Blockly as any).Workspace(); // Temporary to get access to registry if needed, or just use Blockly
-    
+    // Variable Category Callback
     const variableCategoryCallback = (workspace: any) => {
       const xmlList = [];
       const button = document.createElement('button');
@@ -241,59 +217,51 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       button.setAttribute('callbackKey', 'CREATE_VARIABLE');
       xmlList.push(button);
 
-      const blockList = Blockly.Variables.allUsedDeveloperVariables(workspace);
       const variableList = workspace.getVariablesOfType('');
-
       if (variableList.length > 0) {
-        // variables_set block with math_number shadow
-        if (Blockly.Blocks['variables_set']) {
-          const block = document.createElement('block');
-          block.setAttribute('type', 'variables_set');
-          block.setAttribute('gap', '8');
-          const value = document.createElement('value');
-          value.setAttribute('name', 'VALUE');
-          const shadow = document.createElement('shadow');
-          shadow.setAttribute('type', 'math_number');
-          const field = document.createElement('field');
-          field.setAttribute('name', 'NUM');
-          field.innerText = '0';
-          shadow.appendChild(field);
-          value.appendChild(shadow);
-          block.appendChild(value);
-          xmlList.push(block);
-        }
+        // set variable
+        const setBlock = document.createElement('block');
+        setBlock.setAttribute('type', 'variables_set');
+        setBlock.setAttribute('gap', '8');
+        const setValue = document.createElement('value');
+        setValue.setAttribute('name', 'VALUE');
+        const setShadow = document.createElement('shadow');
+        setShadow.setAttribute('type', 'math_number');
+        const setField = document.createElement('field');
+        setField.setAttribute('name', 'NUM');
+        setField.innerText = '0';
+        setShadow.appendChild(setField);
+        setValue.appendChild(setShadow);
+        setBlock.appendChild(setValue);
+        xmlList.push(setBlock);
 
-        // math_change block with math_number shadow
-        if (Blockly.Blocks['math_change']) {
-          const block = document.createElement('block');
-          block.setAttribute('type', 'math_change');
-          block.setAttribute('gap', '8');
-          const value = document.createElement('value');
-          value.setAttribute('name', 'DELTA');
-          const shadow = document.createElement('shadow');
-          shadow.setAttribute('type', 'math_number');
-          const field = document.createElement('field');
-          field.setAttribute('name', 'NUM');
-          field.innerText = '1';
-          shadow.appendChild(field);
-          value.appendChild(shadow);
-          block.appendChild(value);
-          xmlList.push(block);
-        }
+        // change variable
+        const changeBlock = document.createElement('block');
+        changeBlock.setAttribute('type', 'math_change');
+        changeBlock.setAttribute('gap', '24');
+        const changeValue = document.createElement('value');
+        changeValue.setAttribute('name', 'DELTA');
+        const changeShadow = document.createElement('shadow');
+        changeShadow.setAttribute('type', 'math_number');
+        const changeField = document.createElement('field');
+        changeField.setAttribute('name', 'NUM');
+        changeField.innerText = '1';
+        changeShadow.appendChild(changeField);
+        changeValue.appendChild(changeShadow);
+        changeBlock.appendChild(changeValue);
+        xmlList.push(changeBlock);
 
-        // variables_get block
-        if (Blockly.Blocks['variables_get']) {
-          variableList.sort(Blockly.VariableModel.compareByName);
-          for (let i = 0; i < variableList.length; i++) {
-            const block = document.createElement('block');
-            block.setAttribute('type', 'variables_get');
-            block.setAttribute('gap', '8');
-            const field = document.createElement('field');
-            field.setAttribute('name', 'VAR');
-            field.innerText = variableList[i].name;
-            block.appendChild(field);
-            xmlList.push(block);
-          }
+        // variables
+        variableList.sort(Blockly.VariableModel.compareByName);
+        for (let i = 0; i < variableList.length; i++) {
+          const block = document.createElement('block');
+          block.setAttribute('type', 'variables_get');
+          block.setAttribute('gap', '8');
+          const field = document.createElement('field');
+          field.setAttribute('name', 'VAR');
+          field.innerText = variableList[i].name;
+          block.appendChild(field);
+          xmlList.push(block);
         }
       }
       return xmlList;
@@ -315,18 +283,12 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       readOnly,
     });
 
-    // Register variable callback
     workspace.registerToolboxCategoryCallback('VARIABLE', variableCategoryCallback);
-
     workspaceRef.current = workspace;
 
-    // Disable auto-close on flyout so blocks persist while dragging (Scratch-like behavior)
     const flyout = workspace.getFlyout();
-    if (flyout) {
-      (flyout as any).autoClose = false;
-    }
+    if (flyout) (flyout as any).autoClose = false;
 
-    // Load initial workspace state
     const workspaceToLoad = initialWorkspace || starterWorkspace;
     if (workspaceToLoad) {
       try {
@@ -336,8 +298,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       }
     }
 
-    // Force an update to parent to sync the loaded state (especially if it came from starter)
-    // We use a small timeout to ensure the workspace is fully settled and rendered
     setTimeout(() => {
       if (onWorkspaceChange && workspaceRef.current) {
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
@@ -346,32 +306,25 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       }
     }, 100);
 
-    // Style the native toolbox categories after DOM is ready
     setTimeout(() => setupCategoryTabs(), 150);
 
-    // Ensure initial sizing is correct
     const doResize = () => {
-      if (workspaceRef.current) {
-        Blockly.svgResize(workspaceRef.current);
-      }
+      if (workspaceRef.current) Blockly.svgResize(workspaceRef.current);
     };
     requestAnimationFrame(() => {
       doResize();
       requestAnimationFrame(doResize);
     });
 
-    // React to container size changes
     if (typeof ResizeObserver !== 'undefined') {
       resizeObserverRef.current?.disconnect();
       resizeObserverRef.current = new ResizeObserver(() => doResize());
       resizeObserverRef.current.observe(containerRef.current);
     }
 
-    // Change listener with debounce
     let debounceTimer: NodeJS.Timeout;
     const handleChange = (event: any) => {
       if (event.isUiEvent) return;
-      
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (onWorkspaceChange && workspaceRef.current) {
@@ -396,39 +349,22 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         workspaceRef.current = null;
       }
     };
-  }, [Blockly, readOnly, actualToolbox]); // Back to stable dependencies
+  }, [Blockly, readOnly, actualToolbox]);
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      if (workspaceRef.current && Blockly) {
-        Blockly.svgResize(workspaceRef.current);
-      }
+      if (workspaceRef.current && Blockly) Blockly.svgResize(workspaceRef.current);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [Blockly]);
 
-  // Public helpers
-  const getWorkspace = useCallback(() => {
-    if (!workspaceRef.current || !Blockly) return null;
-    return Blockly.serialization.workspaces.save(workspaceRef.current);
-  }, [Blockly]);
-
-  const getCommands = useCallback(() => {
-    if (!workspaceRef.current) return [];
-    return workspaceToCommands(workspaceRef.current);
-  }, []);
-
   return (
     <div 
       className="blockly-wrapper"
       style={{ 
-        position: 'relative', 
-        width: '100%', 
-        height: '100%',
-        minHeight: 600,
-        overflow: 'hidden'
+        position: 'relative', width: '100%', height: '100%',
+        minHeight: 600, overflow: 'hidden'
       }}
     >
       {!isLoaded && (
@@ -449,48 +385,16 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         </div>
       )}
       
-      {/* 
-        The 'all: initial' wrapper is CRITICAL. 
-        It prevents Tailwind's base styles (like box-sizing: border-box on everything) 
-        from breaking Blockly's internal SVG calculations.
-      */}
-      <div 
-        style={{ all: 'initial', display: 'block', width: '100%', height: '100%' }}
-      >
-        <div 
-          ref={containerRef} 
-          style={{ width: '100%', height: '100%', display: 'block' }} 
-        />
+      <div style={{ all: 'initial', display: 'block', width: '100%', height: '100%' }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', display: 'block' }} />
       </div>
 
       <style jsx global>{`
-        /* 
-           Style Blockly's internal widget containers (inputs, dropdowns).
-           We use a z-index lower than the Shadcn/Radix Dialog (usually 50)
-           to prevent input fields from overlapping the submit popup.
-        */
-        .blocklyWidgetDiv, .blocklyDropDownDiv {
-          z-index: 45 !important;
-        }
-        
-        .blocklyTooltipDiv {
-          z-index: 46 !important;
-        }
-        
-        /* Fix toolbox box-sizing which Tailwind breaks */
-        .blocklyToolboxDiv {
-          box-sizing: content-box !important;
-        }
-
-        /* Ensure the flyout stays visible and interactive */
-        .blocklyFlyout {
-          pointer-events: auto !important;
-        }
-
-        /* Prevent text color flickering in flyout */
-        .blocklyFlyoutLabelText {
-          fill: #44403c !important;
-        }
+        .blocklyWidgetDiv, .blocklyDropDownDiv { z-index: 45 !important; }
+        .blocklyTooltipDiv { z-index: 46 !important; }
+        .blocklyToolboxDiv { box-sizing: content-box !important; }
+        .blocklyFlyout { pointer-events: auto !important; }
+        .blocklyFlyoutLabelText { fill: #44403c !important; }
       `}</style>
     </div>
   );
