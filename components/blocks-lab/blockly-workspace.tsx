@@ -222,7 +222,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         callbackKey: 'CREATE_VARIABLE',
       });
 
-      const variableList = workspace.getVariablesOfType('');
+      const variableList = workspace.getVariableMap().getVariablesOfType('');
       if (variableList.length > 0) {
         // set variable block with math_number shadow
         content.push({
@@ -286,8 +286,14 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       readOnly,
     });
 
-    // Register variable callback on the workspace instance
+    // Register variable category callback
     workspace.registerToolboxCategoryCallback('VARIABLE', variableCategoryCallback);
+    
+    // Register the "Create Variable..." button callback
+    workspace.registerButtonCallback('CREATE_VARIABLE', (button: any) => {
+      Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
+    });
+
     workspaceRef.current = workspace;
 
     const flyout = workspace.getFlyout();
