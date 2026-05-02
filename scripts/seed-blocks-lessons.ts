@@ -434,12 +434,12 @@ const leukFullToolbox = {
         { kind: 'block', type: 'logic_boolean' },
       ],
     },
-    {
-      kind: 'category',
-      name: '🔢 Variables',
-      colour: '#FF8C1A',
-      custom: 'VARIABLE',
-    },
+    // {
+    //   kind: 'category',
+    //   name: '🔢 Variables',
+    //   colour: '#FF8C1A',
+    //   custom: 'VARIABLE',
+    // },
     {
       kind: 'category',
       name: '📝 Text',
