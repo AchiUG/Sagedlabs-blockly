@@ -20,6 +20,7 @@ export interface StageState {
   variables: { [key: string]: any };
   pressedKeys: Set<string>;
   running: boolean;
+  lastAnswer: string;
 }
 
 export function createInitialState(config?: any): StageState {
@@ -43,6 +44,7 @@ export function createInitialState(config?: any): StageState {
     variables: {},
     pressedKeys: new Set(),
     running: false,
+    lastAnswer: '',
   };
 }
 
@@ -196,6 +198,14 @@ export class CommandInterpreter {
         case 'HIDE':
           sprite.visible = false;
           break;
+        case 'ASK':
+          const question = String(this.evaluateCondition(action.text) ?? 'What is your name?');
+          sprite.message = question;
+          this.onUpdate?.(this.state);
+          const answer = window.prompt(question);
+          this.state.lastAnswer = answer || '';
+          sprite.message = '';
+          break;
         case 'WAIT':
           const seconds = Number(this.evaluateCondition(action.seconds)) || 0;
           await new Promise(resolve => setTimeout(resolve, seconds * 1000));
@@ -286,6 +296,10 @@ export class CommandInterpreter {
           sprite.y <= halfSize ||
           sprite.y >= this.state.height - halfSize
         );
+      case 'KEY_PRESSED':
+        return this.state.pressedKeys.has(condition.key);
+      case 'ANSWER':
+        return this.state.lastAnswer;
       case 'ARITHMETIC':
         const a = Number(this.evaluateCondition(condition.a));
         const b = Number(this.evaluateCondition(condition.b));

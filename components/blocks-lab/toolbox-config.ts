@@ -52,6 +52,8 @@ export const defaultToolbox = {
       contents: [
         { kind: 'block', type: 'saged_wait', inputs: { SECONDS: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
         { kind: 'block', type: 'saged_repeat', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
+        { kind: 'block', type: 'saged_if' },
+        { kind: 'block', type: 'saged_if_else' },
         { kind: 'block', type: 'controls_if' },
       ],
     },
@@ -63,6 +65,9 @@ export const defaultToolbox = {
         { kind: 'block', type: 'saged_x_position' },
         { kind: 'block', type: 'saged_y_position' },
         { kind: 'block', type: 'saged_touching_edge' },
+        { kind: 'block', type: 'saged_key_pressed' },
+        { kind: 'block', type: 'saged_ask', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'What is your name?' } } } } },
+        { kind: 'block', type: 'saged_answer' },
       ],
     },
     {

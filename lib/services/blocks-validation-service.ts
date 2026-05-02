@@ -136,9 +136,38 @@ export class BlocksValidationService {
   }
 
   private static validateCapstone(commands: any[]): ValidationResult {
-    if (commands.length > 0) {
-      return { isValid: true, message: 'Congratulations on completing your Capstone project!' };
+    if (commands.length === 0) {
+      return { isValid: false, message: 'Your capstone project is empty. Build something amazing!' };
     }
-    return { isValid: false, message: 'Your capstone project is empty. Build something amazing!' };
+
+    const hasEvent = commands.some(c => ['ON_START', 'ON_KEY', 'FOREVER'].includes(c.type));
+    
+    // Check all nested actions for IF and Motion/Looks
+    const allActions: any[] = [];
+    const collectActions = (cmds: any[]) => {
+      cmds.forEach(cmd => {
+        if (cmd.actions) collectActions(cmd.actions);
+        if (cmd.then) collectActions(cmd.then);
+        if (cmd.else) collectActions(cmd.else);
+        allActions.push(cmd);
+      });
+    };
+    collectActions(commands);
+
+    const hasIf = allActions.some(a => a.type === 'IF');
+    const hasMotion = allActions.some(a => ['MOVE_X', 'MOVE_Y', 'SET_X', 'SET_Y', 'GO_TO', 'BOUNCE'].includes(a.type));
+    const hasLooks = allActions.some(a => ['SAY', 'ASK', 'SET_COLOR', 'SET_SIZE', 'SHOW', 'HIDE'].includes(a.type));
+
+    if (!hasEvent) {
+      return { isValid: false, message: 'Your project needs at least one Event block (like "When program starts" or "Forever").' };
+    }
+    if (!hasIf) {
+      return { isValid: false, message: 'Your project needs an interaction using "If" logic!' };
+    }
+    if (!hasMotion && !hasLooks) {
+      return { isValid: false, message: 'Add some feedback using Motion or Looks blocks so we can see what happens!' };
+    }
+
+    return { isValid: true, message: 'Congratulations on completing your Capstone project! Your solution is well-designed.' };
   }
 }

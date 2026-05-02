@@ -55,6 +55,8 @@ export function defineCustomBlocks(Blockly: any) {
             ['up arrow', 'ArrowUp'],
             ['down arrow', 'ArrowDown'],
             ['space', 'Space'],
+            ['y', 'KeyY'],
+            ['n', 'KeyN'],
             ['a', 'KeyA'],
             ['d', 'KeyD'],
             ['w', 'KeyW'],
@@ -226,6 +228,34 @@ export function defineCustomBlocks(Blockly: any) {
       nextStatement: null,
       colour: 20,
       tooltip: 'Repeat blocks a number of times'
+    },
+    {
+      type: 'saged_if',
+      message0: '❓ If %1 then %2 %3',
+      args0: [
+        { type: 'input_value', name: 'IF', check: 'Boolean' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' }
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      colour: 20,
+      tooltip: 'If a condition is true, then do some blocks'
+    },
+    {
+      type: 'saged_if_else',
+      message0: '❓ If %1 then %2 %3 else %4 %5',
+      args0: [
+        { type: 'input_value', name: 'IF', check: 'Boolean' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'ELSE' }
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      colour: 20,
+      tooltip: 'If a condition is true, then do the first set of blocks, otherwise do the second set'
     }
   ]);
 
@@ -254,8 +284,50 @@ export function defineCustomBlocks(Blockly: any) {
       output: 'Boolean',
       colour: 290,
       tooltip: 'Is sprite touching the edge?'
+    },
+    {
+      type: 'saged_ask',
+      message0: '❓ Ask %1 and wait',
+      args0: [{ type: 'input_value', name: 'TEXT', check: 'String' }],
+      previousStatement: null,
+      nextStatement: null,
+      colour: 290,
+      tooltip: 'Ask a question and wait for an answer'
+    },
+    {
+      type: 'saged_answer',
+      message0: '🎤 Answer',
+      output: 'String',
+      colour: 290,
+      tooltip: 'Get the last answer given to a question'
     }
   ]);
+
+  if (!Blockly.Blocks['saged_key_pressed']) {
+    Blockly.Blocks['saged_key_pressed'] = {
+      init: function(this: any) {
+        this.appendDummyInput()
+          .appendField('⌨️ Key')
+          .appendField(new FieldDropdown([
+            ['right arrow', 'ArrowRight'],
+            ['left arrow', 'ArrowLeft'],
+            ['up arrow', 'ArrowUp'],
+            ['down arrow', 'ArrowDown'],
+            ['space', 'Space'],
+            ['y', 'KeyY'],
+            ['n', 'KeyN'],
+            ['a', 'KeyA'],
+            ['d', 'KeyD'],
+            ['w', 'KeyW'],
+            ['s', 'KeyS'],
+          ]), 'KEY')
+          .appendField('pressed?');
+        this.setOutput(true, 'Boolean');
+        this.setColour(290);
+        this.setTooltip('Is a specific key currently pressed?');
+      }
+    };
+  }
 }
 
 // Generate commands from workspace (instead of JS)
@@ -352,6 +424,15 @@ function blockToCommand(block: any): any {
     case 'saged_hide':
       return { type: 'HIDE' };
 
+    case 'saged_ask':
+      return {
+        type: 'ASK',
+        text: getInputValue(block, 'TEXT', 'What is your name?'),
+      };
+
+    case 'saged_answer':
+      return { type: 'ANSWER' };
+
     case 'saged_wait':
       return {
         type: 'WAIT',
@@ -374,6 +455,12 @@ function blockToCommand(block: any): any {
 
     case 'saged_touching_edge':
       return { type: 'TOUCHING_EDGE' };
+
+    case 'saged_key_pressed':
+      return {
+        type: 'KEY_PRESSED',
+        key: block.getFieldValue('KEY'),
+      };
 
     case 'logic_compare':
       return {
@@ -430,11 +517,20 @@ function blockToCommand(block: any): any {
       }
       return { type: 'TEXT_JOIN', parts: textActions };
 
+    case 'saged_if':
     case 'controls_if':
       return {
         type: 'IF',
-        condition: getInputValue(block, 'IF0', false),
-        then: getStatementCommands(block, 'DO0'),
+        condition: getInputValue(block, block.type === 'saged_if' ? 'IF' : 'IF0', false),
+        then: getStatementCommands(block, block.type === 'saged_if' ? 'DO' : 'DO0'),
+        else: getStatementCommands(block, 'ELSE'),
+      };
+
+    case 'saged_if_else':
+      return {
+        type: 'IF',
+        condition: getInputValue(block, 'IF', false),
+        then: getStatementCommands(block, 'DO'),
         else: getStatementCommands(block, 'ELSE'),
       };
 
