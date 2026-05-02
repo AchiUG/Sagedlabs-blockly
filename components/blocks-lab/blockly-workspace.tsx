@@ -210,12 +210,11 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     defineCustomBlocks(Blockly);
 
     /**
-     * Modern Variable Category Callback (JSON-based for stability)
+     * Modern Variable Category Callback (JSON-based)
      */
     const variableCategoryCallback = (workspace: any) => {
       const content = [];
       
-      // Button to create variable
       content.push({
         kind: 'button',
         text: 'Create Variable...',
@@ -224,57 +223,36 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       if (variableList.length > 0) {
-        // Use the most recently added variable as the default for the flyout blocks
-        // We use getId() because Blockly fields usually store the unique ID, not the name
-        const defaultVar = variableList[variableList.length - 1];
-        const defaultVarId = defaultVar.getId();
+        // Use newest variable as default for flyout blocks
+        const defaultVarId = variableList[variableList.length - 1].getId();
 
-        // set variable block with math_number shadow
         content.push({
           kind: 'block',
           type: 'variables_set',
           gap: 8,
-          fields: {
-            VAR: defaultVarId,
-          },
+          fields: { VAR: defaultVarId },
           inputs: {
-            VALUE: {
-              shadow: {
-                type: 'math_number',
-                fields: { NUM: 0 },
-              },
-            },
+            VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
           },
         });
 
-        // change variable block with math_number shadow
         content.push({
           kind: 'block',
           type: 'math_change',
           gap: 24,
-          fields: {
-            VAR: defaultVarId,
-          },
+          fields: { VAR: defaultVarId },
           inputs: {
-            DELTA: {
-              shadow: {
-                type: 'math_number',
-                fields: { NUM: 1 },
-              },
-            },
+            DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
           },
         });
 
-        // Add all existing variables as getter blocks
         variableList.sort(Blockly.VariableModel.compareByName);
         for (const variable of variableList) {
           content.push({
             kind: 'block',
             type: 'variables_get',
             gap: 8,
-            fields: {
-              VAR: variable.getId(),
-            },
+            fields: { VAR: variable.getId() },
           });
         }
       }
@@ -297,10 +275,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       readOnly,
     });
 
-    // Register variable category callback
     workspace.registerToolboxCategoryCallback('VARIABLE', variableCategoryCallback);
     
-    // Register the "Create Variable..." button callback
     workspace.registerButtonCallback('CREATE_VARIABLE', (button: any) => {
       Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
     });
@@ -406,16 +382,28 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         </div>
       )}
       
-      <div style={{ all: 'initial', display: 'block', width: '100%', height: '100%' }}>
-        <div ref={containerRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      <div 
+        style={{ all: 'initial', display: 'block', width: '100%', height: '100%' }}
+      >
+        <div 
+          ref={containerRef} 
+          style={{ 
+            width: '100%', height: '100%', display: 'block',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+          }} 
+        />
       </div>
 
       <style jsx global>{`
-        .blocklyWidgetDiv, .blocklyDropDownDiv { z-index: 45 !important; }
-        .blocklyTooltipDiv { z-index: 46 !important; }
+        .blocklyWidgetDiv, .blocklyDropDownDiv { z-index: 200 !important; }
+        .blocklyTooltipDiv { z-index: 201 !important; }
         .blocklyToolboxDiv { box-sizing: content-box !important; }
         .blocklyFlyout { pointer-events: auto !important; }
         .blocklyFlyoutLabelText { fill: #44403c !important; }
+        .blocklyMenuItem {
+          padding: 8px 12px !important;
+          font-family: system-ui, sans-serif !important;
+        }
       `}</style>
     </div>
   );
