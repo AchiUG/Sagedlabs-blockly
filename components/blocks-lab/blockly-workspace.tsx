@@ -209,62 +209,65 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     defineCustomBlocks(Blockly);
 
-    // Variable Category Callback
+    /**
+     * Modern Variable Category Callback (JSON-based for stability)
+     */
     const variableCategoryCallback = (workspace: any) => {
-      const xmlList = [];
-      const button = document.createElement('button');
-      button.setAttribute('text', 'Create Variable...');
-      button.setAttribute('callbackKey', 'CREATE_VARIABLE');
-      xmlList.push(button);
+      const content = [];
+      
+      // Button to create variable
+      content.push({
+        kind: 'button',
+        text: 'Create Variable...',
+        callbackKey: 'CREATE_VARIABLE',
+      });
 
       const variableList = workspace.getVariablesOfType('');
       if (variableList.length > 0) {
-        // set variable
-        const setBlock = document.createElement('block');
-        setBlock.setAttribute('type', 'variables_set');
-        setBlock.setAttribute('gap', '8');
-        const setValue = document.createElement('value');
-        setValue.setAttribute('name', 'VALUE');
-        const setShadow = document.createElement('shadow');
-        setShadow.setAttribute('type', 'math_number');
-        const setField = document.createElement('field');
-        setField.setAttribute('name', 'NUM');
-        setField.innerText = '0';
-        setShadow.appendChild(setField);
-        setValue.appendChild(setShadow);
-        setBlock.appendChild(setValue);
-        xmlList.push(setBlock);
+        // set variable block with math_number shadow
+        content.push({
+          kind: 'block',
+          type: 'variables_set',
+          gap: 8,
+          inputs: {
+            VALUE: {
+              shadow: {
+                type: 'math_number',
+                fields: { NUM: 0 },
+              },
+            },
+          },
+        });
 
-        // change variable
-        const changeBlock = document.createElement('block');
-        changeBlock.setAttribute('type', 'math_change');
-        changeBlock.setAttribute('gap', '24');
-        const changeValue = document.createElement('value');
-        changeValue.setAttribute('name', 'DELTA');
-        const changeShadow = document.createElement('shadow');
-        changeShadow.setAttribute('type', 'math_number');
-        const changeField = document.createElement('field');
-        changeField.setAttribute('name', 'NUM');
-        changeField.innerText = '1';
-        changeShadow.appendChild(changeField);
-        changeValue.appendChild(changeShadow);
-        changeBlock.appendChild(changeValue);
-        xmlList.push(changeBlock);
+        // change variable block with math_number shadow
+        content.push({
+          kind: 'block',
+          type: 'math_change',
+          gap: 24,
+          inputs: {
+            DELTA: {
+              shadow: {
+                type: 'math_number',
+                fields: { NUM: 1 },
+              },
+            },
+          },
+        });
 
-        // variables
+        // Add all existing variables
         variableList.sort(Blockly.VariableModel.compareByName);
-        for (let i = 0; i < variableList.length; i++) {
-          const block = document.createElement('block');
-          block.setAttribute('type', 'variables_get');
-          block.setAttribute('gap', '8');
-          const field = document.createElement('field');
-          field.setAttribute('name', 'VAR');
-          field.innerText = variableList[i].name;
-          block.appendChild(field);
-          xmlList.push(block);
+        for (const variable of variableList) {
+          content.push({
+            kind: 'block',
+            type: 'variables_get',
+            gap: 8,
+            fields: {
+              VAR: variable.name,
+            },
+          });
         }
       }
-      return xmlList;
+      return content;
     };
 
     const workspace = Blockly.inject(containerRef.current, {
@@ -283,6 +286,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       readOnly,
     });
 
+    // Register variable callback on the workspace instance
     workspace.registerToolboxCategoryCallback('VARIABLE', variableCategoryCallback);
     workspaceRef.current = workspace;
 
