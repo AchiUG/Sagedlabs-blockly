@@ -97,12 +97,6 @@ const defaultToolbox = {
     },
     {
       kind: 'category',
-      name: '🔢 Variables',
-      colour: '#FF8C1A',
-      custom: 'VARIABLE',
-    },
-    {
-      kind: 'category',
       name: '📝 Text',
       colour: '#CF63CF',
       contents: [
@@ -434,12 +428,6 @@ const leukFullToolbox = {
         { kind: 'block', type: 'logic_boolean' },
       ],
     },
-    // {
-    //   kind: 'category',
-    //   name: '🔢 Variables',
-    //   colour: '#FF8C1A',
-    //   custom: 'VARIABLE',
-    // },
     {
       kind: 'category',
       name: '📝 Text',
