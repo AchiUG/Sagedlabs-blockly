@@ -40,7 +40,6 @@
     "db:push": "prisma db push",
     "db:seed:safe": "tsx --require dotenv/config scripts/safe-seed.ts",
     "db:seed:all": "tsx --require dotenv/config scripts/seed-all.ts",
-    "db:sync:export": "tsx --require dotenv/config scripts/update-from-export.ts",
     "db:init": "prisma generate && prisma db push && tsx --require dotenv/config scripts/seed-all.ts"
   },
   "prisma": {
