@@ -65,9 +65,40 @@ export const defaultToolbox = {
         { kind: 'block', type: 'saged_x_position' },
         { kind: 'block', type: 'saged_y_position' },
         { kind: 'block', type: 'saged_touching_edge' },
+        { kind: 'block', type: 'saged_touching_object', inputs: { ID: { shadow: { type: 'text', fields: { TEXT: 'object1' } } } } },
         { kind: 'block', type: 'saged_key_pressed' },
         { kind: 'block', type: 'saged_ask', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'What is your name?' } } } } },
         { kind: 'block', type: 'saged_answer' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '📦 Objects',
+      colour: '#8A2BE2',
+      contents: [
+        {
+          kind: 'block',
+          type: 'saged_create_object',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 100 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_remove_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_with_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
       ],
     },
     {

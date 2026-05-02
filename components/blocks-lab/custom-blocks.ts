@@ -300,6 +300,14 @@ export function defineCustomBlocks(Blockly: any) {
       output: 'String',
       colour: 290,
       tooltip: 'Get the last answer given to a question'
+    },
+    {
+      type: 'saged_touching_object',
+      message0: '👉 Touching object named %1?',
+      args0: [{ type: 'input_value', name: 'ID', check: 'String' }],
+      output: 'Boolean',
+      colour: 290,
+      tooltip: 'Check if this sprite is touching another object'
     }
   ]);
 
@@ -328,6 +336,60 @@ export function defineCustomBlocks(Blockly: any) {
       }
     };
   }
+
+  // ============================================
+  // OBJECT BLOCKS
+  // ============================================
+
+  Blockly.defineBlocksWithJsonArray([
+    {
+      type: 'saged_create_object',
+      message0: '➕ Create %1 at X %2 Y %3 named %4',
+      args0: [
+        {
+          type: 'field_dropdown',
+          name: 'TYPE',
+          options: [
+            ['🐰 Hare', 'hare'],
+            ['🦁 Lion', 'lion'],
+            ['🍎 Food', 'food'],
+            ['💧 Water', 'water'],
+            ['🏠 Home', 'home']
+          ]
+        },
+        { type: 'input_value', name: 'X', check: 'Number' },
+        { type: 'input_value', name: 'Y', check: 'Number' },
+        { type: 'input_value', name: 'ID', check: 'String' }
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      colour: 260,
+      tooltip: 'Create a new object on the stage'
+    },
+    {
+      type: 'saged_remove_object',
+      message0: '❌ Remove object named %1',
+      args0: [{ type: 'input_value', name: 'ID', check: 'String' }],
+      previousStatement: null,
+      nextStatement: null,
+      colour: 260,
+      tooltip: 'Remove an object from the stage'
+    },
+    {
+      type: 'saged_with_object',
+      message0: '🎭 Control object named %1 %2 %3',
+      args0: [
+        { type: 'input_value', name: 'ID', check: 'String' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' }
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      colour: 260,
+      tooltip: 'Perform actions with a specific object'
+    }
+  ]);
 }
 
 // Generate commands from workspace (instead of JS)
@@ -439,6 +501,28 @@ function blockToCommand(block: any): any {
         seconds: getInputValue(block, 'SECONDS', 1),
       };
 
+    case 'saged_create_object':
+      return {
+        type: 'CREATE_SPRITE',
+        spriteType: block.getFieldValue('TYPE'),
+        x: getInputValue(block, 'X', 0),
+        y: getInputValue(block, 'Y', 0),
+        id: getInputValue(block, 'ID', 'object1'),
+      };
+
+    case 'saged_remove_object':
+      return {
+        type: 'REMOVE_SPRITE',
+        id: getInputValue(block, 'ID', 'object1'),
+      };
+
+    case 'saged_with_object':
+      return {
+        type: 'WITH_SPRITE',
+        id: getInputValue(block, 'ID', 'main'),
+        actions: getStatementCommands(block, 'DO'),
+      };
+
     case 'saged_repeat':
       return {
         type: 'REPEAT',
@@ -455,6 +539,12 @@ function blockToCommand(block: any): any {
 
     case 'saged_touching_edge':
       return { type: 'TOUCHING_EDGE' };
+
+    case 'saged_touching_object':
+      return {
+        type: 'TOUCHING_SPRITE',
+        id: getInputValue(block, 'ID', 'object1'),
+      };
 
     case 'saged_key_pressed':
       return {

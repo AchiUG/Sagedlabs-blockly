@@ -70,9 +70,40 @@ const defaultToolbox = {
         { kind: 'block', type: 'saged_x_position' },
         { kind: 'block', type: 'saged_y_position' },
         { kind: 'block', type: 'saged_touching_edge' },
+        { kind: 'block', type: 'saged_touching_object', inputs: { ID: { shadow: { type: 'text', fields: { TEXT: 'object1' } } } } },
         { kind: 'block', type: 'saged_key_pressed' },
         { kind: 'block', type: 'saged_ask', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'What is your name?' } } } } },
         { kind: 'block', type: 'saged_answer' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '📦 Objects',
+      colour: '#8A2BE2',
+      contents: [
+        {
+          kind: 'block',
+          type: 'saged_create_object',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 100 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_remove_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_with_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
       ],
     },
     {
@@ -148,192 +179,7 @@ const simpleToolbox = {
       colour: '#59C059',
       contents: [
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
       ],
-    },
-    {
-      kind: 'category',
-      name: '⚖️ Logic',
-      colour: '#5C81A6',
-      contents: [
-        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-        { kind: 'block', type: 'logic_operation' },
-        { kind: 'block', type: 'logic_negate' },
-        { kind: 'block', type: 'logic_boolean' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔢 Variables',
-      colour: '#FF8C1A',
-      custom: 'VARIABLE',
-    },
-  ],
-};
-
-// Young Sages themed toolboxes
-const leukBeginnerToolbox = {
-  kind: 'categoryToolbox',
-  contents: [
-    {
-      kind: 'category',
-      name: '🟢 Events',
-      colour: '#5ba55b',
-      contents: [
-        { kind: 'block', type: 'saged_on_start' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🟣 Looks',
-      colour: '#9966FF',
-      contents: [
-        { kind: 'block', type: 'saged_say', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Hello!' } } } } },
-      ],
-    },
-  ],
-};
-
-const leukMotionToolbox = {
-  kind: 'categoryToolbox',
-  contents: [
-    {
-      kind: 'category',
-      name: '🟢 Events',
-      colour: '#5ba55b',
-      contents: [
-        { kind: 'block', type: 'saged_on_start' },
-        { kind: 'block', type: 'saged_on_key' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔵 Motion',
-      colour: '#4C97FF',
-      contents: [
-        { kind: 'block', type: 'saged_move_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'saged_move_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'saged_set_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
-        { kind: 'block', type: 'saged_set_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
-        {
-          kind: 'block',
-          type: 'saged_go_to',
-          inputs: {
-            X: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
-            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
-          },
-        },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🟣 Looks',
-      colour: '#9966FF',
-      contents: [
-        { kind: 'block', type: 'saged_say', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Hello!' } } } } },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🟡 Control',
-      colour: '#FF8C1A',
-      contents: [
-        { kind: 'block', type: 'saged_wait', inputs: { SECONDS: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '➕ Math',
-      colour: '#59C059',
-      contents: [
-        { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '⚖️ Logic',
-      colour: '#5C81A6',
-      contents: [
-        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-        { kind: 'block', type: 'logic_operation' },
-        { kind: 'block', type: 'logic_negate' },
-        { kind: 'block', type: 'logic_boolean' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔢 Variables',
-      colour: '#FF8C1A',
-      custom: 'VARIABLE',
-    },
-  ],
-};
-
-const leukBounceToolbox = {
-  kind: 'categoryToolbox',
-  contents: [
-    {
-      kind: 'category',
-      name: '🟢 Events',
-      colour: '#5ba55b',
-      contents: [
-        { kind: 'block', type: 'saged_on_start' },
-        { kind: 'block', type: 'saged_forever' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔵 Motion',
-      colour: '#4C97FF',
-      contents: [
-        { kind: 'block', type: 'saged_move_x', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'saged_move_y', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
-        { kind: 'block', type: 'saged_bounce' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🟣 Looks',
-      colour: '#9966FF',
-      contents: [
-        { kind: 'block', type: 'saged_say', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Oops!' } } } } },
-        { kind: 'block', type: 'saged_set_color' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔷 Sensing',
-      colour: '#5CB1D6',
-      contents: [
-        { kind: 'block', type: 'saged_touching_edge' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '➕ Math',
-      colour: '#59C059',
-      contents: [
-        { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'math_arithmetic', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '⚖️ Logic',
-      colour: '#5C81A6',
-      contents: [
-        { kind: 'block', type: 'logic_compare', inputs: { A: { shadow: { type: 'math_number', fields: { NUM: 1 } } }, B: { shadow: { type: 'math_number', fields: { NUM: 1 } } } } },
-        { kind: 'block', type: 'logic_operation' },
-        { kind: 'block', type: 'logic_negate' },
-        { kind: 'block', type: 'logic_boolean' },
-      ],
-    },
-    {
-      kind: 'category',
-      name: '🔢 Variables',
-      colour: '#FF8C1A',
-      custom: 'VARIABLE',
     },
   ],
 };
@@ -403,9 +249,40 @@ const leukFullToolbox = {
         { kind: 'block', type: 'saged_x_position' },
         { kind: 'block', type: 'saged_y_position' },
         { kind: 'block', type: 'saged_touching_edge' },
+        { kind: 'block', type: 'saged_touching_object', inputs: { ID: { shadow: { type: 'text', fields: { TEXT: 'object1' } } } } },
         { kind: 'block', type: 'saged_key_pressed' },
         { kind: 'block', type: 'saged_ask', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'What is your name?' } } } } },
         { kind: 'block', type: 'saged_answer' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '📦 Objects',
+      colour: '#8A2BE2',
+      contents: [
+        {
+          kind: 'block',
+          type: 'saged_create_object',
+          inputs: {
+            X: { shadow: { type: 'math_number', fields: { NUM: 100 } } },
+            Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_remove_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
+        {
+          kind: 'block',
+          type: 'saged_with_object',
+          inputs: {
+            ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
+          },
+        },
       ],
     },
     {
@@ -448,47 +325,43 @@ const leukFullToolbox = {
 async function main() {
   console.log('🧱 Seeding Blocks Lab lessons...\n');
 
-  // ===== ORIGINAL LESSONS =====
-  
   // Lesson 1: Hello World
   const lesson1 = await prisma.blocksLesson.upsert({
     where: { slug: 'hello-world' },
     update: { 
-      blockConfig: simpleToolbox,
+      blockConfig: defaultToolbox,
       isPublished: true 
     },
     create: {
       slug: 'hello-world',
       title: 'Hello World - Your First Program',
-      description: 'Learn the basics of block programming by making a character say hello!',
-      instructions: `🌟 **Welcome to Blocks Lab!**
+      description: 'Make your character talk!',
+      instructions: `👋 **Welcome to Blocks Lab!**
 
-In this lesson, you'll create your first program.
+In this lesson, you'll learn how to make a character speak.
 
-**Your Task:**
-1. Find the "When program starts" block in Events
-2. Connect a "Say" block from Looks
-3. Type your message in the text box
-4. Click Run to see your character speak!
+**Your Goal:**
+Make the character say "Hello World!" when you press the Run button.
 
-**Bonus Challenge:**
-- Try changing the character's color
-- Make it say different things`,
+**Steps:**
+1. Drag the **"When program starts"** block to the workspace.
+2. Drag the **"Say"** block and attach it inside.
+3. Type **"Hello World!"** in the text box.
+4. Click the **"Run"** button to test it!`,
       stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
-      blockConfig: simpleToolbox,
+      blockConfig: defaultToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
           blocks: [
             {
               type: 'saged_on_start',
-              x: 50,
-              y: 50,
+              x: 20,
+              y: 20,
             },
           ],
         },
       },
-      orderIndex: 1,
       isPublished: true,
     },
   });
@@ -505,27 +378,19 @@ In this lesson, you'll create your first program.
     create: {
       slug: 'move-around',
       title: 'Move Around - Keyboard Controls',
-      description: 'Make your character move using arrow keys!',
-      instructions: `🎮 **Let's Add Movement!**
+      description: 'Control your character with the keyboard!',
+      instructions: `🎮 **Let's get moving!**
 
-In this lesson, you'll make your character move with the keyboard.
+Now you'll learn how to control your character using the arrow keys.
 
-**Your Task:**
-1. Use "When key pressed" blocks from Events
-2. Connect movement blocks to each key event
-3. Right arrow should move right (positive X)
-4. Left arrow should move left (negative X)
-5. Up arrow should move up (positive Y)
-6. Down arrow should move down (negative Y)
+**Your Goal:**
+Make the character move in all four directions.
 
-**Tips:**
-- Positive X moves right
-- Negative X moves left
-- Positive Y moves up
-- Negative Y moves down
-
-**Bonus Challenge:**
-- Add diagonal movement with W, A, S, D keys`,
+**Steps:**
+1. Drag a **"When key pressed"** block.
+2. Select **"up arrow"** and attach a **"Change Y by -10"** block. (In canvas, -Y is up!)
+3. Do the same for **"down arrow"**, **"left arrow"**, and **"right arrow"**.
+4. Test your controls by pressing the keys on your keyboard!`,
       stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: defaultToolbox,
       starterWorkspace: {
@@ -533,21 +398,21 @@ In this lesson, you'll make your character move with the keyboard.
           languageVersion: 0,
           blocks: [
             {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
+              type: 'saged_on_key',
+              x: 20,
+              y: 20,
+              fields: { KEY: 'ArrowUp' },
             },
           ],
         },
       },
-      orderIndex: 2,
       isPublished: true,
     },
   });
 
   console.log(`✅ Created lesson: ${lesson2.title}`);
 
-  // Lesson 3: Animation
+  // Lesson 3: Simple Animation
   const lesson3 = await prisma.blocksLesson.upsert({
     where: { slug: 'simple-animation' },
     update: { 
@@ -557,37 +422,33 @@ In this lesson, you'll make your character move with the keyboard.
     create: {
       slug: 'simple-animation',
       title: 'Simple Animation - Forever Loops',
-      description: 'Create animations using forever loops!',
-      instructions: `🎥 **Make Things Move Automatically!**
+      description: 'Make things move on their own!',
+      instructions: `🔁 **Automatic Motion!**
 
-Learn how to create continuous animations.
+Loops let you repeat actions forever. Let's make the character bounce back and forth.
 
-**Your Task:**
-1. Use a "Forever" block from Events
-2. Add movement inside the forever loop
-3. Add "Bounce if on edge" to keep the character on screen
+**Your Goal:**
+Make the character move horizontally and bounce off the edges.
 
-**Expected Result:**
-Your character should move across the screen and bounce when it hits the edge.
-
-**Bonus Challenge:**
-- Change the character's color when it bounces
-- Make it move in both X and Y directions`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#4C97FF' },
+**Steps:**
+1. Drag the **"Forever"** block.
+2. Put a **"Change X by 10"** block inside.
+3. Add a **"Bounce if on edge"** block below it.
+4. Click **Run** and watch them go!`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: defaultToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
           blocks: [
             {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
+              type: 'saged_forever',
+              x: 20,
+              y: 20,
             },
           ],
         },
       },
-      orderIndex: 3,
       isPublished: true,
     },
   });
@@ -597,32 +458,26 @@ Your character should move across the screen and bounce when it hits the edge.
   // Lesson 4: Interactive Story
   const lesson4 = await prisma.blocksLesson.upsert({
     where: { slug: 'interactive-story' },
-    update: {
+    update: { 
       blockConfig: defaultToolbox,
-      isPublished: true,
+      isPublished: true 
     },
     create: {
       slug: 'interactive-story',
       title: 'Interactive Story',
-      description: 'Create an interactive story with multiple events and messages.',
-      instructions: `📚 **Tell a Story with Code!**
+      description: 'Create a simple dialogue system!',
+      instructions: `📖 **Tell a Story!**
 
-Create an interactive experience where your character responds to different keys.
+Combine everything you've learned to create an interactive scene.
 
-**Your Task:**
-1. When the program starts, have the character introduce themselves
-2. When space is pressed, have them tell a joke or fun fact
-3. When arrow keys are pressed, have them move and say something
+**Your Goal:**
+Make the character introduce themselves and respond to different keys.
 
-**Requirements:**
-- Use at least 3 different "When key pressed" events
-- Have at least 5 different messages
-- Move the character to at least 3 different positions
-
-**Bonus Challenge:**
-- Create a mini adventure game
-- Add color changes to show different moods`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#9966FF' },
+**Steps:**
+1. On start, say "Hi! Press SPACE to hear my secret."
+2. When SPACE is pressed, say "I love learning AI at SAGED!"
+3. Add more keys to tell more of the story.`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: defaultToolbox,
       starterWorkspace: {
         blocks: {
@@ -630,70 +485,50 @@ Create an interactive experience where your character responds to different keys
           blocks: [
             {
               type: 'saged_on_start',
-              x: 50,
-              y: 50,
+              x: 20,
+              y: 20,
             },
           ],
         },
       },
-      orderIndex: 4,
       isPublished: true,
     },
   });
 
   console.log(`✅ Created lesson: ${lesson4.title}`);
 
-  // ===== YOUNG SAGES LESSONS =====
   console.log('\n🐰 Seeding Young Sages (Leuk) lessons...\n');
 
   // Young Sages Lesson 1: Leuk Says Hello
   const ysLesson1 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-says-hello' },
     update: { 
-      blockConfig: leukBeginnerToolbox,
+      blockConfig: leukFullToolbox,
       isPublished: true 
     },
     create: {
       slug: 'leuk-says-hello',
       title: 'Leuk Says Hello',
-      description: 'Your first program! Make Leuk the Hare introduce himself.',
-      instructions: `🐰 **Welcome, Young Sage!**
+      description: 'Introduce our clever hare!',
+      instructions: `🐰 **Meet Leuk the Hare!**
 
-Meet Leuk! He's a clever hare who wants to say hello.
+Leuk is very clever and wants to meet you.
 
-**Your Task:**
-1. Find the green **"On Start"** block in Events
-2. Drag a purple **"Say"** block and connect it underneath
-3. Type "Hello! I am Leuk!" in the text box
-4. Click the green **Run** button
+**Your Goal:**
+Make Leuk say "Hello, I am Leuk the Hare!"
 
-**What Should Happen:**
-A speech bubble appears with Leuk's message!
-
-**You Just Wrote Code!**
-You told the computer: "WHEN the program starts, THEN say hello!"
-That's an IF-THEN rule in action!
-
-**When You're Done:**
-1. Click **Save** to keep your work
-2. Click **Submit** when you're proud of it
-
-**Bonus:** Change the message to make Leuk say something funny!`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
-      blockConfig: leukBeginnerToolbox,
+**Steps:**
+1. Drag **"When program starts"**
+2. Attach **"Say"**
+3. Type his introduction!`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
+      blockConfig: leukFullToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
+          blocks: [{ type: 'saged_on_start', x: 20, y: 20 }],
         },
       },
-      orderIndex: 10,
       isPublished: true,
     },
   });
@@ -703,55 +538,33 @@ That's an IF-THEN rule in action!
   // Young Sages Lesson 2: Leuk Explores
   const ysLesson2 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-explores' },
-    update: {
-      blockConfig: leukMotionToolbox,
-      isPublished: true,
+    update: { 
+      blockConfig: leukFullToolbox,
+      isPublished: true 
     },
     create: {
       slug: 'leuk-explores',
       title: 'Leuk Explores the Savanna',
-      description: 'Make Leuk move around the stage and explore!',
-      instructions: `🌍 **Time to Explore!**
+      description: 'Help Leuk navigate through the grass!',
+      instructions: `🚶 **Exploration Time!**
 
-Leuk is curious. Help him explore the stage!
+Leuk needs to find the best spots in the savanna.
 
-**Understanding the Stage:**
-- The stage is like a map with X and Y coordinates
-- X goes left (negative) and right (positive)
-- Y goes up (positive) and down (negative)
-- The center is (0, 0)
+**Your Goal:**
+Make Leuk move forward 4 times on start.
 
-**Your Task:**
-1. Use **"On Start"** to make Leuk say "Let's explore!"
-2. Add **"Wait"** blocks between movements (so you can see each step)
-3. Use **"Move X"** and **"Move Y"** blocks to move Leuk
-
-**Challenge - Make a Square:**
-Can you make Leuk walk in a square?
-1. Move right (+50 on X)
-2. Move up (+50 on Y)
-3. Move left (-50 on X)
-4. Move down (-50 on Y)
-
-**Extra Challenge:**
-Press arrow keys to move Leuk yourself! Use **"On Key Pressed"** blocks.
-
-**Remember:** Click **Save** often!`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
-      blockConfig: leukMotionToolbox,
+**Steps:**
+1. Use **"When program starts"**
+2. Connect 4 **"Change X by 50"** blocks in a row.
+3. Watch him hop!`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
+      blockConfig: leukFullToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
+          blocks: [{ type: 'saged_on_start', x: 20, y: 20 }],
         },
       },
-      orderIndex: 11,
       isPublished: true,
     },
   });
@@ -762,109 +575,70 @@ Press arrow keys to move Leuk yourself! Use **"On Key Pressed"** blocks.
   const ysLesson3 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-bounces' },
     update: { 
-      blockConfig: leukBounceToolbox,
+      blockConfig: leukFullToolbox,
       isPublished: true 
     },
     create: {
       slug: 'leuk-bounces',
       title: 'Leuk Bounces Around',
-      description: 'Learn about limits and constraints by making Leuk bounce off the edges!',
-      instructions: `🎾 **Bouncing Leuk!**
+      description: 'Leuk is excited to learn!',
+      instructions: `🏀 **Energy!**
 
-The stage has limits - edges that Leuk can't pass. But we can turn limits into fun!
+Leuk can't sit still when he's learning something new.
 
-**Your Task:**
-1. Start with a **"Forever"** block (this runs continuously)
-2. Inside it, add **"Move X by 5"** to move Leuk right
-3. Add **"Bounce if on edge"** so Leuk bounces back
+**Your Goal:**
+Make Leuk move back and forth forever.
 
-**What Happens:**
-Leuk will move right, hit the edge, bounce, move left, hit the other edge, and keep going!
-
-**The Lesson:**
-Limits (like the edge) aren't bad - they make interesting patterns!
-
-**Make It Better:**
-- Try moving in X AND Y (diagonal movement)
-- Change Leuk's color when he touches the edge
-- Make Leuk say "Ouch!" when bouncing
-
-**Experiment:**
-What happens if you make Leuk move by 20 instead of 5? (He moves faster!)`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#8B4513' },
-      blockConfig: leukBounceToolbox,
+**Steps:**
+1. Use the **"Forever"** block.
+2. Put **"Change X by 15"** inside.
+3. Put **"Bounce if on edge"** inside.`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
+      blockConfig: leukFullToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
+          blocks: [{ type: 'saged_forever', x: 20, y: 20 }],
         },
       },
-      orderIndex: 12,
       isPublished: true,
     },
   });
 
   console.log(`✅ Created lesson: ${ysLesson3.title}`);
 
-  // Young Sages Lesson 4: Leuk Litter Detector
+  // Young Sages Lesson 4: Litter Detective
   const ysLesson4 = await prisma.blocksLesson.upsert({
     where: { slug: 'leuk-litter-detector' },
-    update: {
+    update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true,
+      isPublished: true 
     },
     create: {
       slug: 'leuk-litter-detector',
       title: 'Leuk the Litter Detective',
-      description: 'Build a program where Leuk patrols the savanna looking for litter!',
-      instructions: `🔍 **Leuk Patrols for Litter!**
+      description: 'Use logic to keep the savanna clean!',
+      instructions: `🕵️ **Thinking with IF!**
 
-Help Leuk clean up the savanna! He needs to patrol and detect litter.
+Leuk has a rule: IF he sees litter, THEN he says "Found some!"
 
-**The System:**
-- INPUT: Leuk moving around
-- PROCESS: Check different areas
-- OUTPUT: Alert when "litter" is found
+**Your Goal:**
+Make Leuk move, and IF his X position is greater than 100, say "I found litter!"
 
-**Your Task:**
-1. Make Leuk start at position (0, 0) using **"Go to X Y"**
-2. Use **"Forever"** to make Leuk patrol
-3. Make Leuk move and bounce off edges
-4. When Leuk reaches certain positions, have him say "Litter found!"
-
-**Ideas to Try:**
-- When X > 100, say "Checking the east area..."
-- When X < -100, say "Checking the west area..."
-- When Y > 80, say "Litter found! Alerting cleanup crew!"
-
-**Remember:**
-AI systems do exactly this - patrol, detect, and alert!
-
-**Make It Your Own:**
-- Add different messages for different areas
-- Change Leuk's color when he finds something
-- Make him count how many pieces of "litter" he finds`,
-      stageConfig: { width: 480, height: 360, spriteColor: '#228B22' },
+**Steps:**
+1. Use **"Forever"** to keep moving.
+2. Inside, put **"Change X by 5"**.
+3. Add an **"If"** block.
+4. Use a **"Math Compare"** (>) to check **"X Position"**.
+5. Put a **"Say"** block inside the If.`,
+      stageConfig: { width: 480, height: 360, spriteColor: '#124734' },
       blockConfig: leukFullToolbox,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
+          blocks: [{ type: 'saged_forever', x: 20, y: 20 }],
         },
       },
-      orderIndex: 13,
       isPublished: true,
     },
   });
@@ -875,7 +649,7 @@ AI systems do exactly this - patrol, detect, and alert!
   const ysLesson5 = await prisma.blocksLesson.upsert({
     where: { slug: 'capstone-project' },
     update: { 
-      blockConfig: defaultToolbox,
+      blockConfig: leukFullToolbox,
       isPublished: true 
     },
     create: {
@@ -927,16 +701,9 @@ You think like Leuk, observe like a scientist, and build like a programmer!`,
       starterWorkspace: {
         blocks: {
           languageVersion: 0,
-          blocks: [
-            {
-              type: 'saged_on_start',
-              x: 50,
-              y: 50,
-            },
-          ],
+          blocks: [{ type: 'saged_on_start', x: 20, y: 20 }],
         },
       },
-      orderIndex: 14,
       isPublished: true,
     },
   });
@@ -944,22 +711,13 @@ You think like Leuk, observe like a scientist, and build like a programmer!`,
   console.log(`✅ Created lesson: ${ysLesson5.title}`);
 
   console.log('\n🎉 All Blocks Lab lessons seeded successfully!');
-  console.log('\n📍 Original lessons:');
-  console.log('   /learn/hello-world');
-  console.log('   /learn/move-around');
-  console.log('   /learn/simple-animation');
-  console.log('   /learn/interactive-story');
-  console.log('\n🐰 Young Sages lessons:');
-  console.log('   /learn/leuk-says-hello');
-  console.log('   /learn/leuk-explores');
-  console.log('   /learn/leuk-bounces');
-  console.log('   /learn/leuk-litter-detector');
-  console.log('   /learn/capstone-project');
+  console.log('\n📍 Original lessons:\n   /learn/hello-world\n   /learn/move-around\n   /learn/simple-animation\n   /learn/interactive-story');
+  console.log('\n🐰 Young Sages lessons:\n   /learn/leuk-says-hello\n   /learn/leuk-explores\n   /learn/leuk-bounces\n   /learn/leuk-litter-detector\n   /learn/capstone-project');
 }
 
 main()
   .catch((e) => {
-    console.error('Error seeding blocks lessons:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

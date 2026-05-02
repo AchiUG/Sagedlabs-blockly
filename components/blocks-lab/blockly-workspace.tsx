@@ -231,6 +231,74 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     defineCustomBlocks(Blockly);
 
+    // Register a custom flyout callback for variables to add shadow blocks
+    workspaceRef.current = new (Blockly as any).Workspace(); // Temporary to get access to registry if needed, or just use Blockly
+    
+    const variableCategoryCallback = (workspace: any) => {
+      const xmlList = [];
+      const button = document.createElement('button');
+      button.setAttribute('text', 'Create Variable...');
+      button.setAttribute('callbackKey', 'CREATE_VARIABLE');
+      xmlList.push(button);
+
+      const blockList = Blockly.Variables.allUsedDeveloperVariables(workspace);
+      const variableList = workspace.getVariablesOfType('');
+
+      if (variableList.length > 0) {
+        // variables_set block with math_number shadow
+        if (Blockly.Blocks['variables_set']) {
+          const block = document.createElement('block');
+          block.setAttribute('type', 'variables_set');
+          block.setAttribute('gap', '8');
+          const value = document.createElement('value');
+          value.setAttribute('name', 'VALUE');
+          const shadow = document.createElement('shadow');
+          shadow.setAttribute('type', 'math_number');
+          const field = document.createElement('field');
+          field.setAttribute('name', 'NUM');
+          field.innerText = '0';
+          shadow.appendChild(field);
+          value.appendChild(shadow);
+          block.appendChild(value);
+          xmlList.push(block);
+        }
+
+        // math_change block with math_number shadow
+        if (Blockly.Blocks['math_change']) {
+          const block = document.createElement('block');
+          block.setAttribute('type', 'math_change');
+          block.setAttribute('gap', '8');
+          const value = document.createElement('value');
+          value.setAttribute('name', 'DELTA');
+          const shadow = document.createElement('shadow');
+          shadow.setAttribute('type', 'math_number');
+          const field = document.createElement('field');
+          field.setAttribute('name', 'NUM');
+          field.innerText = '1';
+          shadow.appendChild(field);
+          value.appendChild(shadow);
+          block.appendChild(value);
+          xmlList.push(block);
+        }
+
+        // variables_get block
+        if (Blockly.Blocks['variables_get']) {
+          variableList.sort(Blockly.VariableModel.compareByName);
+          for (let i = 0; i < variableList.length; i++) {
+            const block = document.createElement('block');
+            block.setAttribute('type', 'variables_get');
+            block.setAttribute('gap', '8');
+            const field = document.createElement('field');
+            field.setAttribute('name', 'VAR');
+            field.innerText = variableList[i].name;
+            block.appendChild(field);
+            xmlList.push(block);
+          }
+        }
+      }
+      return xmlList;
+    };
+
     const workspace = Blockly.inject(containerRef.current, {
       toolbox: actualToolbox,
       grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
@@ -246,6 +314,9 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       move: { scrollbars: true, drag: true, wheel: true },
       readOnly,
     });
+
+    // Register variable callback
+    workspace.registerToolboxCategoryCallback('VARIABLE', variableCategoryCallback);
 
     workspaceRef.current = workspace;
 

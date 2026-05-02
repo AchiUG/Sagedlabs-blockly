@@ -1,6 +1,8 @@
 // Command interpreter for running Blockly-generated commands
 
 export interface SpriteState {
+  id: string;
+  type: 'hare' | 'lion' | 'food' | 'water' | 'home';
   x: number;
   y: number;
   color: string;
@@ -24,13 +26,17 @@ export interface StageState {
 }
 
 export function createInitialState(config?: any): StageState {
+  const width = config?.width || 480;
+  const height = config?.height || 360;
   return {
-    width: config?.width || 480,
-    height: config?.height || 360,
+    width,
+    height,
     sprites: {
       main: {
-        x: config?.width ? config.width / 2 : 240,
-        y: config?.height ? config.height / 2 : 180,
+        id: 'main',
+        type: 'hare',
+        x: width / 2,
+        y: height / 2,
         color: config?.spriteColor || '#124734',
         size: 100,
         visible: true,
@@ -56,6 +62,7 @@ export class CommandInterpreter {
   private startActions: any[][];
   private animationFrame: number | null = null;
   private onUpdate: ((state: StageState) => void) | null = null;
+  private currentSpriteId: string = 'main';
 
   constructor(commands: any[], state: StageState) {
     this.commands = commands;
@@ -113,17 +120,18 @@ export class CommandInterpreter {
         }
       }
 
-      // Update message timers
-      const sprite = this.state.sprites.main;
-      if (sprite.messageTimer > 0) {
-        sprite.messageTimer--;
-        if (sprite.messageTimer <= 0) {
-          sprite.message = '';
+      // Update message timers for all sprites
+      for (const sprite of Object.values(this.state.sprites)) {
+        if (sprite.messageTimer > 0) {
+          sprite.messageTimer--;
+          if (sprite.messageTimer <= 0) {
+            sprite.message = '';
+          }
         }
-      }
-      
-      if (sprite.bounceTimer > 0) {
-        sprite.bounceTimer--;
+        
+        if (sprite.bounceTimer > 0) {
+          sprite.bounceTimer--;
+        }
       }
 
       this.onUpdate?.(this.state);
@@ -156,13 +164,42 @@ export class CommandInterpreter {
   private async executeActions(actions: any[]) {
     if (!this.state.running) return;
     
-    const sprite = this.state.sprites.main;
-
     for (const action of actions) {
       if (!this.state.running) break;
       if (!action || typeof action !== 'object') continue;
 
+      const sprite = this.state.sprites[this.currentSpriteId] || this.state.sprites.main;
+
       switch (action.type) {
+        case 'CREATE_SPRITE':
+          const id = String(this.evaluateCondition(action.id));
+          this.state.sprites[id] = {
+            id,
+            type: (action.spriteType as any) || 'food',
+            x: (this.state.width / 2) + (Number(this.evaluateCondition(action.x)) || 0),
+            y: (this.state.height / 2) - (Number(this.evaluateCondition(action.y)) || 0),
+            color: action.spriteType === 'lion' ? '#ef4444' : action.spriteType === 'water' ? '#3b82f6' : '#124734',
+            size: 100,
+            visible: true,
+            message: '',
+            messageTimer: 0,
+            bounceTimer: 0,
+            directionX: 1,
+            directionY: 1,
+          };
+          break;
+        case 'REMOVE_SPRITE':
+          const removeId = String(this.evaluateCondition(action.id));
+          if (removeId !== 'main') {
+            delete this.state.sprites[removeId];
+          }
+          break;
+        case 'WITH_SPRITE':
+          const oldId = this.currentSpriteId;
+          this.currentSpriteId = String(this.evaluateCondition(action.id));
+          await this.executeActions(action.actions || []);
+          this.currentSpriteId = oldId;
+          break;
         case 'MOVE_X':
           sprite.x += (Number(this.evaluateCondition(action.value)) || 0) * (sprite.directionX || 1);
           break;
@@ -236,16 +273,14 @@ export class CommandInterpreter {
       
       // Update UI after each step in a sequence
       this.onUpdate?.(this.state);
+      this.constrainToBounds(sprite);
     }
-
-    this.constrainToBounds(sprite);
   }
 
   private bounceOnEdge(sprite: SpriteState) {
-    const halfSize = (sprite.size / 100) * 25; // Assume 50px base sprite
+    const halfSize = (sprite.size / 100) * 25;
     let bounced = false;
     
-    // Check horizontal bounce
     if (sprite.x <= halfSize) {
       sprite.x = halfSize;
       sprite.directionX = 1;
@@ -256,14 +291,13 @@ export class CommandInterpreter {
       bounced = true;
     }
 
-    // Check vertical bounce
     if (sprite.y <= halfSize) {
       sprite.y = halfSize;
-      sprite.directionY = -1; // Moving down now (Y increases down)
+      sprite.directionY = -1;
       bounced = true;
     } else if (sprite.y >= this.state.height - halfSize) {
       sprite.y = this.state.height - halfSize;
-      sprite.directionY = 1; // Moving up now (Y decreases up)
+      sprite.directionY = 1;
       bounced = true;
     }
 
@@ -285,10 +319,19 @@ export class CommandInterpreter {
     
     if (!condition || typeof condition !== 'object') return false;
 
-    const sprite = this.state.sprites.main;
+    const sprite = this.state.sprites[this.currentSpriteId] || this.state.sprites.main;
     const halfSize = (sprite.size / 100) * 25;
 
     switch (condition.type) {
+      case 'TOUCHING_SPRITE':
+        const targetId = String(this.evaluateCondition(condition.id));
+        const target = this.state.sprites[targetId];
+        if (!target || targetId === this.currentSpriteId) return false;
+        
+        const dist = Math.sqrt(Math.pow(sprite.x - target.x, 2) + Math.pow(sprite.y - target.y, 2));
+        const combinedRadius = ((sprite.size / 100) * 25) + ((target.size / 100) * 25);
+        return dist < combinedRadius;
+
       case 'TOUCHING_EDGE':
         return (
           sprite.x <= halfSize ||
@@ -338,7 +381,7 @@ export class CommandInterpreter {
       case 'Y_POSITION':
         return (this.state.height / 2) - sprite.y;
       case 'TEXT_JOIN':
-        return condition.parts.map((p: any) => this.evaluateCondition(p)).join('');
+        return (condition.parts || []).map((p: any) => this.evaluateCondition(p)).join('');
       case 'GET_VARIABLE':
         return this.state.variables[condition.name] ?? 0;
       default:

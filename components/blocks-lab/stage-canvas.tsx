@@ -28,13 +28,11 @@ export default function StageCanvas({
     let scaleX = 1;
     let scaleY = 1;
     if (sprite.bounceTimer > 0) {
-      // Create a "squish" effect (wider/shorter or thinner/taller)
       const factor = Math.sin((sprite.bounceTimer / 15) * Math.PI) * 0.3;
       scaleX = 1 + factor;
       scaleY = 1 - factor;
     }
     
-    // Apply horizontal flip based on direction
     if (sprite.directionX === -1) {
       scaleX *= -1;
     }
@@ -44,64 +42,120 @@ export default function StageCanvas({
     ctx.scale(scaleX, scaleY);
     ctx.translate(-x, -y);
 
-    // Draw sprite (simple character)
-    ctx.fillStyle = sprite.color;
-    
-    // Body (rounded rectangle)
-    ctx.beginPath();
-    const bodyWidth = size;
-    const bodyHeight = size * 1.2;
-    const radius = size * 0.2;
-    
-    ctx.moveTo(x - bodyWidth/2 + radius, y - bodyHeight/2);
-    ctx.lineTo(x + bodyWidth/2 - radius, y - bodyHeight/2);
-    ctx.quadraticCurveTo(x + bodyWidth/2, y - bodyHeight/2, x + bodyWidth/2, y - bodyHeight/2 + radius);
-    ctx.lineTo(x + bodyWidth/2, y + bodyHeight/2 - radius);
-    ctx.quadraticCurveTo(x + bodyWidth/2, y + bodyHeight/2, x + bodyWidth/2 - radius, y + bodyHeight/2);
-    ctx.lineTo(x - bodyWidth/2 + radius, y + bodyHeight/2);
-    ctx.quadraticCurveTo(x - bodyWidth/2, y + bodyHeight/2, x - bodyWidth/2, y + bodyHeight/2 - radius);
-    ctx.lineTo(x - bodyWidth/2, y - bodyHeight/2 + radius);
-    ctx.quadraticCurveTo(x - bodyWidth/2, y - bodyHeight/2, x - bodyWidth/2 + radius, y - bodyHeight/2);
-    ctx.closePath();
-    ctx.fill();
+    if (sprite.type === 'hare' || sprite.type === 'lion') {
+      // Body
+      ctx.fillStyle = sprite.type === 'lion' ? '#ea580c' : sprite.color;
+      
+      // If lion, draw mane
+      if (sprite.type === 'lion') {
+        ctx.fillStyle = '#9a3412';
+        ctx.beginPath();
+        ctx.arc(x, y - size * 0.1, size * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ea580c';
+      }
 
-    // Eyes
-    ctx.fillStyle = 'white';
-    const eyeSize = size * 0.15;
-    const eyeY = y - bodyHeight * 0.15;
-    
-    ctx.beginPath();
-    ctx.arc(x - size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.arc(x + size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
-    ctx.fill();
+      // Main body
+      ctx.beginPath();
+      const bodyWidth = size;
+      const bodyHeight = size * 1.2;
+      const radius = size * 0.2;
+      
+      ctx.moveTo(x - bodyWidth/2 + radius, y - bodyHeight/2);
+      ctx.lineTo(x + bodyWidth/2 - radius, y - bodyHeight/2);
+      ctx.quadraticCurveTo(x + bodyWidth/2, y - bodyHeight/2, x + bodyWidth/2, y - bodyHeight/2 + radius);
+      ctx.lineTo(x + bodyWidth/2, y + bodyHeight/2 - radius);
+      ctx.quadraticCurveTo(x + bodyWidth/2, y + bodyHeight/2, x + bodyWidth/2 - radius, y + bodyHeight/2);
+      ctx.lineTo(x - bodyWidth/2 + radius, y + bodyHeight/2);
+      ctx.quadraticCurveTo(x - bodyWidth/2, y + bodyHeight/2, x - bodyWidth/2, y + bodyHeight/2 - radius);
+      ctx.lineTo(x - bodyWidth/2, y - bodyHeight/2 + radius);
+      ctx.quadraticCurveTo(x - bodyWidth/2, y - bodyHeight/2, x - bodyWidth/2 + radius, y - bodyHeight/2);
+      ctx.closePath();
+      ctx.fill();
 
-    // Pupils
-    ctx.fillStyle = '#333';
-    const pupilSize = eyeSize * 0.5;
-    
-    ctx.beginPath();
-    ctx.arc(x - size * 0.15, eyeY, pupilSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.arc(x + size * 0.15, eyeY, pupilSize, 0, Math.PI * 2);
-    ctx.fill();
+      // Ears for Hare
+      if (sprite.type === 'hare') {
+        ctx.fillStyle = sprite.color;
+        // Left Ear
+        ctx.beginPath();
+        ctx.ellipse(x - size * 0.2, y - size * 0.7, size * 0.15, size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Right Ear
+        ctx.beginPath();
+        ctx.ellipse(x + size * 0.2, y - size * 0.7, size * 0.15, size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-    // Smile
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, y + bodyHeight * 0.1, size * 0.2, 0.1 * Math.PI, 0.9 * Math.PI);
-    ctx.stroke();
+      // Eyes
+      ctx.fillStyle = 'white';
+      const eyeSize = size * 0.15;
+      const eyeY = y - bodyHeight * 0.15;
+      
+      ctx.beginPath();
+      ctx.arc(x - size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(x + size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pupils
+      ctx.fillStyle = '#333';
+      const pupilSize = eyeSize * 0.5;
+      
+      ctx.beginPath();
+      ctx.arc(x - size * 0.15, eyeY, pupilSize, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(x + size * 0.15, eyeY, pupilSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Smile
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y + bodyHeight * 0.1, size * 0.2, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.stroke();
+    } else if (sprite.type === 'food') {
+      ctx.fillStyle = '#ef4444'; // Red apple
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      // Stem
+      ctx.strokeStyle = '#422006';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y - size * 0.4);
+      ctx.lineTo(x, y - size * 0.7);
+      ctx.stroke();
+    } else if (sprite.type === 'water') {
+      ctx.fillStyle = '#3b82f6'; // Blue drop
+      ctx.beginPath();
+      ctx.moveTo(x, y - size * 0.6);
+      ctx.bezierCurveTo(x + size * 0.5, y, x + size * 0.5, y + size * 0.6, x, y + size * 0.6);
+      ctx.bezierCurveTo(x - size * 0.5, y + size * 0.6, x - size * 0.5, y, x, y - size * 0.6);
+      ctx.fill();
+    } else if (sprite.type === 'home') {
+      ctx.fillStyle = '#f59e0b'; // Amber house
+      ctx.beginPath();
+      // House base
+      ctx.rect(x - size * 0.5, y - size * 0.2, size, size * 0.7);
+      // Roof
+      ctx.moveTo(x - size * 0.6, y - size * 0.2);
+      ctx.lineTo(x, y - size * 0.7);
+      ctx.lineTo(x + size * 0.6, y - size * 0.2);
+      ctx.fill();
+      // Door
+      ctx.fillStyle = '#422006';
+      ctx.fillRect(x - size * 0.15, y + size * 0.2, size * 0.3, size * 0.3);
+    }
 
     ctx.restore();
 
     // Draw speech bubble if message exists
     if (sprite.message) {
-      drawSpeechBubble(ctx, x, y - bodyHeight/2 - 20, sprite.message);
+      drawSpeechBubble(ctx, x, y - (size * 0.8), sprite.message);
     }
   }, []);
 
