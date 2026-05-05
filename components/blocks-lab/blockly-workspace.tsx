@@ -357,7 +357,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
       // Handle variable creation/renaming to update the "Intelligent" toolbox blocks
       if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_RENAME) {
-        console.log(`[Blockly] Variable event: ${event.type}, varId: ${event.varId}`);
+        // console.log(`[Blockly] Variable event: ${event.type}, varId: ${event.varId}`);
         lastVarIdRef.current = event.varId;
         const ws = workspaceRef.current;
         if (ws && ws.getToolbox()) {
@@ -370,7 +370,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
-              console.log(`[Blockly] Refreshing variable flyout with ${contents.length} items`);
+              // console.log(`[Blockly] Refreshing variable flyout with ${contents.length} items`);
               flyout.show(contents);
             }
           }
@@ -427,7 +427,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
-              console.log(`[Blockly] Auto-sync: Refreshing variable flyout`);
+              // console.log(`[Blockly] Auto-sync: Refreshing variable flyout`);
               flyout.show(contents);
             }
           }
