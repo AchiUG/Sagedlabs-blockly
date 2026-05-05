@@ -47,9 +47,53 @@ export default function BlocklyLabPage() {
           };
         }
 
+        // Register new Motion blocks for isolated test
+        if (!Blockly.Blocks['saged_turn_cw']) {
+          Blockly.Blocks['saged_turn_cw'] = {
+            init(this: any) {
+              this.appendValueInput('VALUE').setCheck('Number').appendField('↻ Turn clockwise');
+              this.appendDummyInput().appendField('degrees');
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setColour('#4C97FF');
+            }
+          };
+        }
+        if (!Blockly.Blocks['saged_turn_ccw']) {
+          Blockly.Blocks['saged_turn_ccw'] = {
+            init(this: any) {
+              this.appendValueInput('VALUE').setCheck('Number').appendField('↺ Turn counter-clockwise');
+              this.appendDummyInput().appendField('degrees');
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setColour('#4C97FF');
+            }
+          };
+        }
+        if (!Blockly.Blocks['saged_point_direction']) {
+          Blockly.Blocks['saged_point_direction'] = {
+            init(this: any) {
+              this.appendValueInput('VALUE').setCheck('Number').appendField('🧭 Point in direction');
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setColour('#4C97FF');
+            }
+          };
+        }
+        if (!Blockly.Blocks['saged_point_towards']) {
+          Blockly.Blocks['saged_point_towards'] = {
+            init(this: any) {
+              this.appendValueInput('ID').setCheck('String').appendField('🎯 Point towards');
+              this.setPreviousStatement(true);
+              this.setNextStatement(true);
+              this.setColour('#4C97FF');
+            }
+          };
+        }
+
         if (!containerRef.current || cancelled) return;
 
-        // 3. Toolbox — simple two-category setup
+        // 3. Toolbox — simple three-category setup
         const toolbox = {
           kind: 'categoryToolbox',
           contents: [
@@ -58,6 +102,17 @@ export default function BlocklyLabPage() {
               name: '🟢 Events',
               colour: '#FFAB19',
               contents: [{ kind: 'block', type: 'test_on_start' }],
+            },
+            {
+              kind: 'category',
+              name: '🔵 Motion',
+              colour: '#4C97FF',
+              contents: [
+                { kind: 'block', type: 'saged_turn_cw', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 15 } } } } },
+                { kind: 'block', type: 'saged_turn_ccw', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 15 } } } } },
+                { kind: 'block', type: 'saged_point_direction', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
+                { kind: 'block', type: 'saged_point_towards', inputs: { ID: { shadow: { type: 'text', fields: { TEXT: 'object1' } } } } },
+              ],
             },
             {
               kind: 'category',

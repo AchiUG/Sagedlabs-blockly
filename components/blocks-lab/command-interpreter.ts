@@ -5,6 +5,7 @@ export interface SpriteState {
   type: 'hare' | 'lion' | 'food' | 'water' | 'home';
   x: number;
   y: number;
+  rotation: number; // in degrees
   color: string;
   size: number;
   visible: boolean;
@@ -37,6 +38,7 @@ export function createInitialState(config?: any): StageState {
         type: 'hare',
         x: width / 2,
         y: height / 2,
+        rotation: 0,
         color: config?.spriteColor || '#124734',
         size: 100,
         visible: true,
@@ -178,6 +180,7 @@ export class CommandInterpreter {
             type: (action.spriteType as any) || 'food',
             x: (this.state.width / 2) + (Number(this.evaluateCondition(action.x)) || 0),
             y: (this.state.height / 2) - (Number(this.evaluateCondition(action.y)) || 0),
+            rotation: 0,
             color: action.spriteType === 'lion' ? '#ef4444' : action.spriteType === 'water' ? '#3b82f6' : '#124734',
             size: 100,
             visible: true,
@@ -218,6 +221,28 @@ export class CommandInterpreter {
           break;
         case 'BOUNCE':
           this.bounceOnEdge(sprite);
+          break;
+        case 'TURN_CW':
+          sprite.rotation = (sprite.rotation + (Number(this.evaluateCondition(action.value)) || 0)) % 360;
+          break;
+        case 'TURN_CCW':
+          sprite.rotation = (sprite.rotation - (Number(this.evaluateCondition(action.value)) || 0)) % 360;
+          break;
+        case 'POINT_DIRECTION':
+          sprite.rotation = (Number(this.evaluateCondition(action.value)) || 0) % 360;
+          break;
+        case 'POINT_TOWARDS':
+          const targetId = String(this.evaluateCondition(action.id));
+          const target = this.state.sprites[targetId];
+          if (target && targetId !== this.currentSpriteId) {
+            const dx = target.x - sprite.x;
+            const dy = target.y - sprite.y;
+            // Math.atan2 returns radians, convert to degrees
+            // In canvas, positive Y is down, so we might need to adjust based on visual expectation
+            // Standard atan2(dy, dx) gives angle from X-axis towards Y-axis
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            sprite.rotation = angle;
+          }
           break;
         case 'SAY':
           sprite.message = String(this.evaluateCondition(action.text) ?? '');

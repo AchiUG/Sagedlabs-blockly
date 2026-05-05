@@ -221,10 +221,49 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         callbackKey: 'CREATE_VARIABLE',
       });
 
+      // 1. Get standard variables from the map
       const variableList = workspace.getVariableMap().getVariablesOfType('');
-      if (variableList.length > 0) {
+      
+      // 2. Identify potential 'inherited' variables from object names
+      // We look for saged_create_object blocks and extract their IDs
+      const allBlocks = workspace.getAllBlocks(false);
+      const objectNames = new Set<string>();
+      
+      for (const block of allBlocks) {
+        if (block.type === 'saged_create_object') {
+          // Try to get the ID from the input
+          const idInput = block.getInput('ID');
+          if (idInput && idInput.connection && idInput.connection.targetBlock()) {
+            const target = idInput.connection.targetBlock();
+            if (target.type === 'text') {
+              const name = target.getFieldValue('TEXT');
+              if (name && name.trim()) {
+                objectNames.add(name.trim());
+              }
+            }
+          }
+        }
+      }
+
+      // Add object names that aren't already variables
+      const existingNames = new Set(variableList.map((v: any) => v.name));
+      for (const name of objectNames) {
+        if (!existingNames.has(name)) {
+          // If the user hasn't created this as a variable yet, 
+          // we'll help them by making it available as a getter
+          // We'll create it on the fly in the workspace if it doesn't exist
+          if (!readOnly) {
+            workspace.createVariable(name);
+          }
+        }
+      }
+
+      // Refresh variable list after potential additions
+      const updatedVariableList = workspace.getVariableMap().getVariablesOfType('');
+
+      if (updatedVariableList.length > 0) {
         // Use newest variable as default for flyout blocks
-        const defaultVarId = variableList[variableList.length - 1].getId();
+        const defaultVarId = updatedVariableList[updatedVariableList.length - 1].getId();
 
         content.push({
           kind: 'block',
@@ -246,14 +285,20 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           },
         });
 
-        variableList.sort(Blockly.VariableModel.compareByName);
-        for (const variable of variableList) {
-          content.push({
-            kind: 'block',
-            type: 'variables_get',
-            gap: 8,
-            fields: { VAR: variable.getId() },
-          });
+        updatedVariableList.sort(Blockly.VariableModel.compareByName);
+        const seenNames = new Set<string>();
+        for (const variable of updatedVariableList) {
+          // Only show unique variable names in the flyout to avoid clutter
+          // if multiple variables with the same name (like 'i') exist.
+          if (!seenNames.has(variable.name)) {
+            content.push({
+              kind: 'block',
+              type: 'variables_get',
+              gap: 8,
+              fields: { VAR: variable.getId() },
+            });
+            seenNames.add(variable.name);
+          }
         }
       }
       return content;

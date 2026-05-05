@@ -140,6 +140,47 @@ export function defineCustomBlocks(Blockly: any) {
     ]);
   });
 
+  safeDefine(Blockly, 'saged_turn_cw', () => {
+    Blockly.defineBlocksWithJsonArray([
+      {
+        type: 'saged_turn_cw',
+        message0: '↻ Turn clockwise %1 degrees',
+        args0: [{ type: 'input_value', name: 'VALUE', check: 'Number' }],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 230,
+        tooltip: 'Rotate sprite clockwise'
+      },
+      {
+        type: 'saged_turn_ccw',
+        message0: '↺ Turn counter-clockwise %1 degrees',
+        args0: [{ type: 'input_value', name: 'VALUE', check: 'Number' }],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 230,
+        tooltip: 'Rotate sprite counter-clockwise'
+      },
+      {
+        type: 'saged_point_direction',
+        message0: '🧭 Point in direction %1',
+        args0: [{ type: 'input_value', name: 'VALUE', check: 'Number' }],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 230,
+        tooltip: 'Set sprite direction angle'
+      },
+      {
+        type: 'saged_point_towards',
+        message0: '🎯 Point towards %1',
+        args0: [{ type: 'input_value', name: 'ID', check: 'String' }],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 230,
+        tooltip: 'Point towards another object'
+      }
+    ]);
+  });
+
   // ============================================
   // LOOKS BLOCKS
   // ============================================
@@ -474,6 +515,30 @@ function blockToCommand(block: any): any {
 
     case 'saged_bounce':
       return { type: 'BOUNCE' };
+
+    case 'saged_turn_cw':
+      return {
+        type: 'TURN_CW',
+        value: getInputValue(block, 'VALUE', 15),
+      };
+
+    case 'saged_turn_ccw':
+      return {
+        type: 'TURN_CCW',
+        value: getInputValue(block, 'VALUE', 15),
+      };
+
+    case 'saged_point_direction':
+      return {
+        type: 'POINT_DIRECTION',
+        value: getInputValue(block, 'VALUE', 90),
+      };
+
+    case 'saged_point_towards':
+      return {
+        type: 'POINT_TOWARDS',
+        id: getInputValue(block, 'ID', 'main'),
+      };
 
     case 'saged_say':
       return {

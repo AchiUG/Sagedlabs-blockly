@@ -39,6 +39,9 @@ export default function StageCanvas({
 
     ctx.save();
     ctx.translate(x, y);
+    if (sprite.rotation) {
+      ctx.rotate(sprite.rotation * Math.PI / 180);
+    }
     ctx.scale(scaleX, scaleY);
     ctx.translate(-x, -y);
 
