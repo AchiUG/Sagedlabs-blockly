@@ -236,13 +236,17 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         }
         
         const defaultVarId = defaultVar.getId();
-        console.log(`[Blockly] Intelligent variable update: showing "${defaultVar.name}" as default.`);
+        const defaultVarName = defaultVar.name;
+        console.log(`[Blockly] Intelligent variable update: showing "${defaultVarName}" as default.`);
 
         content.push({
           kind: 'block',
           type: 'variables_set',
           gap: 8,
-          fields: { VAR: defaultVarId },
+          fields: { 
+            VAR: defaultVarName,
+            VARIABLE: defaultVarName 
+          },
           inputs: {
             VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
           },
@@ -252,18 +256,28 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           kind: 'block',
           type: 'math_change',
           gap: 24,
-          fields: { VAR: defaultVarId },
+          fields: { 
+            VAR: defaultVarName,
+            VARIABLE: defaultVarName 
+          },
           inputs: {
             DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
           },
         });
 
+        // "Intelligent" Getter: Just show ONE block. 
+        // Users can change it via dropdown, but it starts as the "inherited" newest name.
         content.push({
           kind: 'block',
           type: 'variables_get',
           gap: 8,
-          fields: { VAR: defaultVarId },
+          fields: { 
+            VAR: defaultVarName,
+            VARIABLE: defaultVarName 
+          },
         });
+
+        console.log('[Blockly] Flyout JSON:', JSON.stringify(content, null, 2));
       }
       return content;
     };
