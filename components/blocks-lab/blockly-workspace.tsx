@@ -213,11 +213,11 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     defineCustomBlocks(Blockly);
 
     /**
-     * Modern Variable Category Callback (JSON-based)
-     * Every created variable gets its own dedicated block in the list.
+     * Modern Variable Category Callback
+     * Uses XML elements for blocks to ensure variable name inheritance is 100% reliable.
      */
     const variableCategoryCallback = (workspace: any) => {
-      const content = [];
+      const content: any[] = [];
       
       content.push({
         kind: 'button',
@@ -228,38 +228,57 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       
       if (variableList.length > 0) {
-        // Determine the "newest" or "last used" variable for the Set/Change blocks
+        // Determine the "newest" variable for Set/Change blocks
         let newestVar = variableList[variableList.length - 1];
         if (lastVarIdRef.current) {
           const found = variableList.find((v: any) => v.getId() === lastVarIdRef.current);
           if (found) newestVar = found;
         }
-        
-        const newestVarId = newestVar.getId();
 
-        // 1. Show Set and Change blocks (defaulted to the newest variable)
-        content.push({
-          kind: 'block',
-          type: 'variables_set',
-          gap: 8,
-          fields: { VAR: newestVarId },
-          inputs: {
-            VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
-          },
-        });
+        /**
+         * Helper to create a variable block using XML (guarantees name inheritance)
+         */
+        const createVarBlockXml = (type: string, variable: any, gap: number = 8) => {
+          const block = Blockly.utils.xml.createElement('block');
+          block.setAttribute('type', type);
+          block.setAttribute('gap', gap.toString());
+          const field = Blockly.utils.xml.createElement('field');
+          field.setAttribute('name', 'VAR');
+          field.setAttribute('id', variable.getId());
+          field.appendChild(Blockly.utils.xml.createTextNode(variable.name));
+          block.appendChild(field);
+          return block;
+        };
 
-        content.push({
-          kind: 'block',
-          type: 'math_change',
-          gap: 24,
-          fields: { VAR: newestVarId },
-          inputs: {
-            DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
-          },
-        });
+        // 1. Create Set block with shadow input
+        const setBlock = createVarBlockXml('variables_set', newestVar, 8);
+        const setValue = Blockly.utils.xml.createElement('value');
+        setValue.setAttribute('name', 'VALUE');
+        const setShadow = Blockly.utils.xml.createElement('shadow');
+        setShadow.setAttribute('type', 'math_number');
+        const setNumField = Blockly.utils.xml.createElement('field');
+        setNumField.setAttribute('name', 'NUM');
+        setNumField.appendChild(Blockly.utils.xml.createTextNode('0'));
+        setShadow.appendChild(setNumField);
+        setValue.appendChild(setShadow);
+        setBlock.appendChild(setValue);
+        content.push(setBlock);
 
-        // 2. Variable Inheritance: Create a dedicated block for EVERY unique variable name.
-        // We sort them alphabetically so they are easy to find.
+        // 2. Create Change block with shadow input
+        const changeBlock = createVarBlockXml('math_change', newestVar, 24);
+        const changeValue = Blockly.utils.xml.createElement('value');
+        changeValue.setAttribute('name', 'DELTA');
+        const changeShadow = Blockly.utils.xml.createElement('shadow');
+        changeShadow.setAttribute('type', 'math_number');
+        const changeNumField = Blockly.utils.xml.createElement('field');
+        changeNumField.setAttribute('name', 'NUM');
+        changeNumField.appendChild(Blockly.utils.xml.createTextNode('1'));
+        changeShadow.appendChild(changeNumField);
+        changeValue.appendChild(changeShadow);
+        changeBlock.appendChild(changeValue);
+        content.push(changeBlock);
+
+        // 3. Variable Inheritance List: One getter block for every unique variable
         const sortedVariables = [...variableList].sort((a, b) => 
           a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
         );
@@ -268,12 +287,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         for (const variable of sortedVariables) {
           const nameLower = variable.name.toLowerCase().trim();
           if (nameLower && !seenNames.has(nameLower)) {
-            content.push({
-              kind: 'block',
-              type: 'variables_get',
-              gap: 8,
-              fields: { VAR: variable.getId() },
-            });
+            content.push(createVarBlockXml('variables_get', variable, 8));
             seenNames.add(nameLower);
           }
         }
