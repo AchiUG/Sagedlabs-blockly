@@ -229,8 +229,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       
       if (variableList.length > 0) {
         // Determine the "default" variable to show in the toolbox
-        // We prefer the one the user just interacted with (lastVarIdRef)
-        // Falling back to the newest one in the list.
         let defaultVar = variableList[variableList.length - 1];
         if (lastVarIdRef.current) {
           const found = variableList.find((v: any) => v.getId() === lastVarIdRef.current);
@@ -238,6 +236,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         }
         
         const defaultVarId = defaultVar.getId();
+        console.log(`[Blockly] Intelligent variable update: showing "${defaultVar.name}" as default.`);
 
         content.push({
           kind: 'block',
@@ -259,8 +258,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           },
         });
 
-        // "Intelligent" Getter: Just show ONE block. 
-        // Users can change it via dropdown, but it starts as the "inherited" newest name.
         content.push({
           kind: 'block',
           type: 'variables_get',
@@ -344,6 +341,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
       // Handle variable creation/renaming to update the "Intelligent" toolbox blocks
       if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_RENAME) {
+        console.log(`[Blockly] Variable event: ${event.type}, varId: ${event.varId}`);
         lastVarIdRef.current = event.varId;
         const ws = workspaceRef.current;
         if (ws && ws.getToolbox()) {
@@ -393,7 +391,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         let changed = false;
         for (const name of objectNames) {
           if (!existingNames.has(name.toLowerCase())) {
-            ws.createVariable(name);
+            const newVar = ws.createVariable(name);
+            lastVarIdRef.current = newVar.getId();
             changed = true;
           }
         }
