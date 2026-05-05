@@ -32,6 +32,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   const colorMapRef = useRef<Record<string, string>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [Blockly, setBlockly] = useState<any>(null);
+  const lastVarIdRef = useRef<string | null>(null);
 
   const actualToolbox = toolboxConfig || defaultToolbox;
 
@@ -213,6 +214,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     /**
      * Modern Variable Category Callback (JSON-based)
+     * Intelligent Approach: Only show ONE getter block that defaults to the newest/last used variable.
      */
     const variableCategoryCallback = (workspace: any) => {
       const content = [];
@@ -226,9 +228,16 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       
       if (variableList.length > 0) {
-        // Use newest variable as default for flyout blocks
-        const newestVar = variableList[variableList.length - 1];
-        const defaultVarId = newestVar.getId();
+        // Determine the "default" variable to show in the toolbox
+        // We prefer the one the user just interacted with (lastVarIdRef)
+        // Falling back to the newest one in the list.
+        let defaultVar = variableList[variableList.length - 1];
+        if (lastVarIdRef.current) {
+          const found = variableList.find((v: any) => v.getId() === lastVarIdRef.current);
+          if (found) defaultVar = found;
+        }
+        
+        const defaultVarId = defaultVar.getId();
 
         content.push({
           kind: 'block',
@@ -250,24 +259,14 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           },
         });
 
-        // Sort by name for the getter list
-        const sortedVariables = [...variableList].sort((a, b) => 
-          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-        );
-
-        const seenNames = new Set<string>();
-        for (const variable of sortedVariables) {
-          const nameLower = variable.name.toLowerCase().trim();
-          if (nameLower && !seenNames.has(nameLower)) {
-            content.push({
-              kind: 'block',
-              type: 'variables_get',
-              gap: 8,
-              fields: { VAR: variable.getId() },
-            });
-            seenNames.add(nameLower);
-          }
-        }
+        // "Intelligent" Getter: Just show ONE block. 
+        // Users can change it via dropdown, but it starts as the "inherited" newest name.
+        content.push({
+          kind: 'block',
+          type: 'variables_get',
+          gap: 8,
+          fields: { VAR: defaultVarId },
+        });
       }
       return content;
     };
@@ -342,6 +341,19 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     let debounceTimer: NodeJS.Timeout;
     const handleChange = (event: any) => {
       if (event.isUiEvent) return;
+
+      // Handle variable creation/renaming to update the "Intelligent" toolbox blocks
+      if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_RENAME) {
+        lastVarIdRef.current = event.varId;
+        if (workspaceRef.current && workspaceRef.current.getToolbox()) {
+          // Force flyout to refresh if it's currently open
+          const toolbox = workspaceRef.current.getToolbox();
+          const category = toolbox.getToolboxItems().find((item: any) => 
+            item.name_ === '🔢 Variables' || item.id_ === 'VARIABLE'
+          );
+          if (category) toolbox.refreshSelection();
+        }
+      }
 
       // Sync object names to variables
       if (!readOnly && workspaceRef.current && (
