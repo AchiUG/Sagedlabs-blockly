@@ -9,6 +9,7 @@ interface BlocklyWorkspaceProps {
   starterWorkspace?: any;
   toolboxConfig?: any;
   onWorkspaceChange?: (workspace: any, commands: any[]) => void;
+  onPrompt?: (message: string, defaultValue: string, callback: (val: string | null) => void) => void;
   readOnly?: boolean;
 }
 
@@ -22,6 +23,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   starterWorkspace,
   toolboxConfig,
   onWorkspaceChange,
+  onPrompt,
   readOnly = false,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -221,49 +223,12 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         callbackKey: 'CREATE_VARIABLE',
       });
 
-      // 1. Get standard variables from the map
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       
-      // 2. Identify potential 'inherited' variables from object names
-      // We look for saged_create_object blocks and extract their IDs
-      const allBlocks = workspace.getAllBlocks(false);
-      const objectNames = new Set<string>();
-      
-      for (const block of allBlocks) {
-        if (block.type === 'saged_create_object') {
-          // Try to get the ID from the input
-          const idInput = block.getInput('ID');
-          if (idInput && idInput.connection && idInput.connection.targetBlock()) {
-            const target = idInput.connection.targetBlock();
-            if (target.type === 'text') {
-              const name = target.getFieldValue('TEXT');
-              if (name && name.trim()) {
-                objectNames.add(name.trim());
-              }
-            }
-          }
-        }
-      }
-
-      // Add object names that aren't already variables
-      const existingNames = new Set(variableList.map((v: any) => v.name));
-      for (const name of objectNames) {
-        if (!existingNames.has(name)) {
-          // If the user hasn't created this as a variable yet, 
-          // we'll help them by making it available as a getter
-          // We'll create it on the fly in the workspace if it doesn't exist
-          if (!readOnly) {
-            workspace.createVariable(name);
-          }
-        }
-      }
-
-      // Refresh variable list after potential additions
-      const updatedVariableList = workspace.getVariableMap().getVariablesOfType('');
-
-      if (updatedVariableList.length > 0) {
+      if (variableList.length > 0) {
         // Use newest variable as default for flyout blocks
-        const defaultVarId = updatedVariableList[updatedVariableList.length - 1].getId();
+        const newestVar = variableList[variableList.length - 1];
+        const defaultVarId = newestVar.getId();
 
         content.push({
           kind: 'block',
@@ -285,19 +250,22 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           },
         });
 
-        updatedVariableList.sort(Blockly.VariableModel.compareByName);
+        // Sort by name for the getter list
+        const sortedVariables = [...variableList].sort((a, b) => 
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        );
+
         const seenNames = new Set<string>();
-        for (const variable of updatedVariableList) {
-          // Only show unique variable names in the flyout to avoid clutter
-          // if multiple variables with the same name (like 'i') exist.
-          if (!seenNames.has(variable.name)) {
+        for (const variable of sortedVariables) {
+          const nameLower = variable.name.toLowerCase().trim();
+          if (nameLower && !seenNames.has(nameLower)) {
             content.push({
               kind: 'block',
               type: 'variables_get',
               gap: 8,
               fields: { VAR: variable.getId() },
             });
-            seenNames.add(variable.name);
+            seenNames.add(nameLower);
           }
         }
       }
@@ -325,6 +293,13 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     workspace.registerButtonCallback('CREATE_VARIABLE', (button: any) => {
       Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
     });
+
+    // Handle custom prompt override
+    if (onPrompt) {
+      Blockly.dialog.setPrompt((message: string, defaultValue: string, callback: (val: string | null) => void) => {
+        onPrompt(message, defaultValue, callback);
+      });
+    }
 
     workspaceRef.current = workspace;
 
@@ -367,6 +342,55 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     let debounceTimer: NodeJS.Timeout;
     const handleChange = (event: any) => {
       if (event.isUiEvent) return;
+
+      // Sync object names to variables
+      if (!readOnly && workspaceRef.current && (
+        event.type === Blockly.Events.BLOCK_CREATE || 
+        event.type === Blockly.Events.BLOCK_CHANGE ||
+        event.type === Blockly.Events.BLOCK_MOVE
+      )) {
+        const ws = workspaceRef.current;
+        const allBlocks = ws.getAllBlocks(false);
+        const objectNames = new Set<string>();
+        
+        for (const block of allBlocks) {
+          if (block.type === 'saged_create_object') {
+            const idInput = block.getInput('ID');
+            if (idInput && idInput.connection && idInput.connection.targetBlock()) {
+              const target = idInput.connection.targetBlock();
+              if (target.type === 'text') {
+                const name = target.getFieldValue('TEXT');
+                if (name && name.trim()) {
+                  objectNames.add(name.trim());
+                }
+              }
+            }
+          }
+        }
+
+        const variableMap = ws.getVariableMap();
+        const existingVariables = variableMap.getVariablesOfType('');
+        const existingNames = new Set(existingVariables.map((v: any) => v.name.toLowerCase()));
+        
+        let changed = false;
+        for (const name of objectNames) {
+          if (!existingNames.has(name.toLowerCase())) {
+            ws.createVariable(name);
+            changed = true;
+          }
+        }
+        
+        // If we added variables, refresh the toolbox if it's open
+        if (changed && ws.getToolbox()) {
+          const toolbox = ws.getToolbox();
+          const category = toolbox.getToolboxItems().find((item: any) => item.name_ === '🔢 Variables');
+          if (category) {
+            // This is a bit of a hack but it tells Blockly to refresh the flyout
+            ws.getToolbox().refreshSelection();
+          }
+        }
+      }
+
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (onWorkspaceChange && workspaceRef.current) {

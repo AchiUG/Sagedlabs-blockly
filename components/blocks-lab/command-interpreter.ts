@@ -65,6 +65,7 @@ export class CommandInterpreter {
   private animationFrame: number | null = null;
   private onUpdate: ((state: StageState) => void) | null = null;
   private currentSpriteId: string = 'main';
+  private onPrompt: ((message: string, defaultValue: string) => Promise<string | null>) | null = null;
 
   constructor(commands: any[], state: StageState) {
     this.commands = commands;
@@ -98,9 +99,13 @@ export class CommandInterpreter {
 
   private runningLoops: Set<number> = new Set();
 
-  async start(onUpdate: (state: StageState) => void) {
+  async start(
+    onUpdate: (state: StageState) => void,
+    onPrompt?: (message: string, defaultValue: string) => Promise<string | null>
+  ) {
     this.state.running = true;
     this.onUpdate = onUpdate;
+    this.onPrompt = onPrompt || null;
     
     // Run all START scripts in parallel
     this.startActions.forEach(actions => this.executeActions(actions));
@@ -264,7 +269,14 @@ export class CommandInterpreter {
           const question = String(this.evaluateCondition(action.text) ?? 'What is your name?');
           sprite.message = question;
           this.onUpdate?.(this.state);
-          const answer = window.prompt(question);
+          
+          let answer: string | null = null;
+          if (this.onPrompt) {
+            answer = await this.onPrompt(question, '');
+          } else {
+            answer = window.prompt(question);
+          }
+          
           this.state.lastAnswer = answer || '';
           sprite.message = '';
           break;

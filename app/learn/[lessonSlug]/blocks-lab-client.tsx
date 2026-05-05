@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -65,6 +66,37 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
+
+  // Prompt Modal State
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [promptMessage, setPromptMessage] = useState('');
+  const [promptValue, setPromptValue] = useState('');
+  const [promptCallback, setPromptCallback] = useState<((val: string | null) => void) | null>(null);
+
+  const handleBlocklyPrompt = useCallback((message: string, defaultValue: string, callback: (val: string | null) => void) => {
+    setPromptMessage(message);
+    setPromptValue(defaultValue);
+    setPromptCallback(() => callback);
+    setPromptOpen(true);
+  }, []);
+
+  const handlePromptSubmit = () => {
+    if (promptCallback) {
+      promptCallback(promptValue);
+    }
+    setPromptOpen(false);
+    setPromptValue('');
+    setPromptCallback(null);
+  };
+
+  const handleInterpreterPrompt = useCallback(async (message: string, defaultValue: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      setPromptMessage(message);
+      setPromptValue(defaultValue);
+      setPromptCallback(() => (val: string | null) => resolve(val));
+      setPromptOpen(true);
+    });
+  }, []);
 
   // Handle workspace changes
   const handleWorkspaceChange = useCallback((newWorkspace: any, newCommands: any[]) => {
@@ -157,7 +189,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
     interpreterRef.current = new CommandInterpreter(commands, initialState);
     interpreterRef.current.start((newState) => {
       setStageState({ ...newState });
-    });
+    }, handleInterpreterPrompt);
 
     setIsRunning(true);
     toast.success('Program started!');
@@ -328,6 +360,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
             starterWorkspace={lesson.starterWorkspace}
             toolboxConfig={toolbox}
             onWorkspaceChange={handleWorkspaceChange}
+            onPrompt={handleBlocklyPrompt}
             readOnly={isSubmitted}
           />
         </div>
@@ -418,6 +451,45 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
               ) : (
                 'Submit Project'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prompt Modal */}
+      <Dialog open={promptOpen} onOpenChange={(open) => {
+        if (!open && promptCallback) {
+          promptCallback(null);
+          setPromptCallback(null);
+        }
+        setPromptOpen(open);
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Input Required</DialogTitle>
+            <DialogDescription>
+              {promptMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={promptValue}
+              onChange={(e) => setPromptValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handlePromptSubmit();
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              if (promptCallback) promptCallback(null);
+              setPromptOpen(false);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handlePromptSubmit} className="bg-[#124734] hover:bg-[#0d3526]">
+              OK
             </Button>
           </DialogFooter>
         </DialogContent>
