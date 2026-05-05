@@ -214,7 +214,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     /**
      * Modern Variable Category Callback (JSON-based)
-     * Intelligent Approach: Only show ONE getter block that defaults to the newest/last used variable.
+     * Every created variable gets its own dedicated block in the list.
      */
     const variableCategoryCallback = (workspace: any) => {
       const content = [];
@@ -228,25 +228,21 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       const variableList = workspace.getVariableMap().getVariablesOfType('');
       
       if (variableList.length > 0) {
-        // Determine the "default" variable to show in the toolbox
-        let defaultVar = variableList[variableList.length - 1];
+        // Determine the "newest" or "last used" variable for the Set/Change blocks
+        let newestVar = variableList[variableList.length - 1];
         if (lastVarIdRef.current) {
           const found = variableList.find((v: any) => v.getId() === lastVarIdRef.current);
-          if (found) defaultVar = found;
+          if (found) newestVar = found;
         }
         
-        const defaultVarId = defaultVar.getId();
-        const defaultVarName = defaultVar.name;
-        console.log(`[Blockly] Intelligent variable update: showing "${defaultVarName}" as default.`);
+        const newestVarId = newestVar.getId();
 
+        // 1. Show Set and Change blocks (defaulted to the newest variable)
         content.push({
           kind: 'block',
           type: 'variables_set',
           gap: 8,
-          fields: { 
-            VAR: defaultVarName,
-            VARIABLE: defaultVarName 
-          },
+          fields: { VAR: newestVarId },
           inputs: {
             VALUE: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
           },
@@ -256,28 +252,31 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           kind: 'block',
           type: 'math_change',
           gap: 24,
-          fields: { 
-            VAR: defaultVarName,
-            VARIABLE: defaultVarName 
-          },
+          fields: { VAR: newestVarId },
           inputs: {
             DELTA: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
           },
         });
 
-        // "Intelligent" Getter: Just show ONE block. 
-        // Users can change it via dropdown, but it starts as the "inherited" newest name.
-        content.push({
-          kind: 'block',
-          type: 'variables_get',
-          gap: 8,
-          fields: { 
-            VAR: defaultVarName,
-            VARIABLE: defaultVarName 
-          },
-        });
+        // 2. Variable Inheritance: Create a dedicated block for EVERY unique variable name.
+        // We sort them alphabetically so they are easy to find.
+        const sortedVariables = [...variableList].sort((a, b) => 
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        );
 
-        console.log('[Blockly] Flyout JSON:', JSON.stringify(content, null, 2));
+        const seenNames = new Set<string>();
+        for (const variable of sortedVariables) {
+          const nameLower = variable.name.toLowerCase().trim();
+          if (nameLower && !seenNames.has(nameLower)) {
+            content.push({
+              kind: 'block',
+              type: 'variables_get',
+              gap: 8,
+              fields: { VAR: variable.getId() },
+            });
+            seenNames.add(nameLower);
+          }
+        }
       }
       return content;
     };
