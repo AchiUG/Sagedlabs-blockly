@@ -349,10 +349,12 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           const category = toolbox.getToolboxItems().find((item: any) => 
             item.name_ === '🔢 Variables' || item.id_ === 'VARIABLE'
           );
-          if (category && category.isSelected()) {
+          const selectedItem = toolbox.getSelectedItem();
+          if (category && selectedItem === category) {
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
+              console.log(`[Blockly] Refreshing variable flyout with ${contents.length} items`);
               flyout.show(contents);
             }
           }
@@ -403,11 +405,13 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           const category = toolbox.getToolboxItems().find((item: any) => 
             item.name_ === '🔢 Variables' || item.id_ === 'VARIABLE'
           );
-          if (category && category.isSelected()) {
+          const selectedItem = toolbox.getSelectedItem();
+          if (category && selectedItem === category) {
             // Force the flyout to re-render its contents immediately
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
+              console.log(`[Blockly] Auto-sync: Refreshing variable flyout`);
               flyout.show(contents);
             }
           }
