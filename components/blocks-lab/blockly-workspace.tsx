@@ -345,13 +345,19 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       // Handle variable creation/renaming to update the "Intelligent" toolbox blocks
       if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_RENAME) {
         lastVarIdRef.current = event.varId;
-        if (workspaceRef.current && workspaceRef.current.getToolbox()) {
-          // Force flyout to refresh if it's currently open
-          const toolbox = workspaceRef.current.getToolbox();
+        const ws = workspaceRef.current;
+        if (ws && ws.getToolbox()) {
+          const toolbox = ws.getToolbox();
           const category = toolbox.getToolboxItems().find((item: any) => 
             item.name_ === '🔢 Variables' || item.id_ === 'VARIABLE'
           );
-          if (category) toolbox.refreshSelection();
+          if (category && category.isSelected()) {
+            const flyout = ws.getFlyout();
+            if (flyout) {
+              const contents = variableCategoryCallback(ws);
+              flyout.show(contents);
+            }
+          }
         }
       }
 
@@ -395,10 +401,16 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         // If we added variables, refresh the toolbox if it's open
         if (changed && ws.getToolbox()) {
           const toolbox = ws.getToolbox();
-          const category = toolbox.getToolboxItems().find((item: any) => item.name_ === '🔢 Variables');
-          if (category) {
-            // This is a bit of a hack but it tells Blockly to refresh the flyout
-            ws.getToolbox().refreshSelection();
+          const category = toolbox.getToolboxItems().find((item: any) => 
+            item.name_ === '🔢 Variables' || item.id_ === 'VARIABLE'
+          );
+          if (category && category.isSelected()) {
+            // Force the flyout to re-render its contents immediately
+            const flyout = ws.getFlyout();
+            if (flyout) {
+              const contents = variableCategoryCallback(ws);
+              flyout.show(contents);
+            }
           }
         }
       }
