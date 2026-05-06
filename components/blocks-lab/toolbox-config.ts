@@ -34,7 +34,7 @@ export const defaultToolbox = {
         { kind: 'block', type: 'saged_turn_cw', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 15 } } } } },
         { kind: 'block', type: 'saged_turn_ccw', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 15 } } } } },
         { kind: 'block', type: 'saged_point_direction', inputs: { VALUE: { shadow: { type: 'math_number', fields: { NUM: 90 } } } } },
-        { kind: 'block', type: 'saged_point_towards', inputs: { ID: { shadow: { type: 'text', fields: { TEXT: 'object1' } } } } },
+        { kind: 'block', type: 'saged_point_towards' },
       ],
     },
     {
@@ -89,6 +89,7 @@ export const defaultToolbox = {
             ID: { shadow: { type: 'text', fields: { TEXT: 'food1' } } },
           },
         },
+        { kind: 'block', type: 'saged_set_backdrop' },
         {
           kind: 'block',
           type: 'saged_remove_object',

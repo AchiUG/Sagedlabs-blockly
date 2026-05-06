@@ -152,6 +152,22 @@ export default function StageCanvas({
       // Door
       ctx.fillStyle = '#422006';
       ctx.fillRect(x - size * 0.15, y + size * 0.2, size * 0.3, size * 0.3);
+    } else if (sprite.type === 'carrot') {
+      // Carrot body
+      ctx.fillStyle = '#f97316'; // Orange
+      ctx.beginPath();
+      ctx.moveTo(x - size * 0.3, y - size * 0.4);
+      ctx.lineTo(x + size * 0.3, y - size * 0.4);
+      ctx.lineTo(x, y + size * 0.6);
+      ctx.closePath();
+      ctx.fill();
+      // Green top
+      ctx.fillStyle = '#22c55e'; // Green
+      ctx.beginPath();
+      ctx.ellipse(x, y - size * 0.5, size * 0.1, size * 0.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(x - size * 0.15, y - size * 0.45, size * 0.1, size * 0.2, -Math.PI / 4, 0, Math.PI * 2);
+      ctx.ellipse(x + size * 0.15, y - size * 0.45, size * 0.1, size * 0.2, Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     ctx.restore();
@@ -224,12 +240,70 @@ export default function StageCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
-    ctx.fillStyle = '#f0f9ff'; // Light blue background
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 1. Draw Backdrop
+    if (state.backdrop === 'savanna') {
+      ctx.fillStyle = '#fef3c7'; // Amber-50
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Grass patches
+      ctx.fillStyle = '#fcd34d';
+      for (let i = 0; i < 20; i++) {
+        const gx = (i * 137.5) % canvas.width;
+        const gy = (i * 221.7) % canvas.height;
+        ctx.fillRect(gx, gy, 10, 2);
+      }
+    } else if (state.backdrop === 'forest') {
+      ctx.fillStyle = '#dcfce7'; // Green-100
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Trees
+      ctx.fillStyle = '#22c55e';
+      for (let i = 0; i < 15; i++) {
+        const tx = (i * 157.5) % canvas.width;
+        const ty = (i * 251.7) % canvas.height;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx - 15, ty + 40);
+        ctx.lineTo(tx + 15, ty + 40);
+        ctx.fill();
+      }
+    } else if (state.backdrop === 'desert') {
+      ctx.fillStyle = '#ffedd5'; // Orange-100
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Dunes
+      ctx.strokeStyle = '#fed7aa';
+      ctx.lineWidth = 5;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 100 + i * 60);
+        ctx.bezierCurveTo(150, 50 + i * 60, 300, 150 + i * 60, 480, 100 + i * 60);
+        ctx.stroke();
+      }
+    } else if (state.backdrop === 'arctic') {
+      ctx.fillStyle = '#f0f9ff'; // Blue-50
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Ice floes
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < 10; i++) {
+        const ix = (i * 197.5) % canvas.width;
+        const iy = (i * 281.7) % canvas.height;
+        ctx.fillRect(ix, iy, 40, 20);
+      }
+    } else if (state.backdrop === 'space') {
+      ctx.fillStyle = '#0f172a'; // Slate-900
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Stars
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < 50; i++) {
+        const sx = (i * 123.5) % canvas.width;
+        const sy = (i * 456.7) % canvas.height;
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-    // Draw grid (optional, for visual reference)
-    ctx.strokeStyle = '#e0e0e0';
+    // 2. Draw Grid (Subtle overlay)
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
     ctx.lineWidth = 1;
     const gridSize = 40;
     
@@ -248,7 +322,7 @@ export default function StageCanvas({
     }
 
     // Draw center crosshair
-    ctx.strokeStyle = '#ccc';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
     ctx.beginPath();
