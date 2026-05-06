@@ -350,10 +350,10 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
   const toolbox = lesson.blockConfig || defaultToolbox;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden">
       <Header />
 
-      <div className="bg-white border-b border-gray-200 px-4 py-2">
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex-shrink-0">
         <Link
           href="/learn"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
@@ -363,21 +363,23 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
         </Link>
       </div>
 
-      <LabToolbar
-        isRunning={isRunning}
-        isSaving={isSaving}
-        isSubmitted={isSubmitted}
-        onRun={handleRun}
-        onStop={handleStop}
-        onReset={handleReset}
-        onSave={saveProject}
-        onSubmit={handleOpenSubmitDialog}
-        lastSaved={lastSaved}
-        nextLessonSlug={nextLessonSlug}
-      />
+      <div className="flex-shrink-0">
+        <LabToolbar
+          isRunning={isRunning}
+          isSaving={isSaving}
+          isSubmitted={isSubmitted}
+          onRun={handleRun}
+          onStop={handleStop}
+          onReset={handleReset}
+          onSave={saveProject}
+          onSubmit={handleOpenSubmitDialog}
+          lastSaved={lastSaved}
+          nextLessonSlug={nextLessonSlug}
+        />
+      </div>
 
-      <div className="flex-1 flex min-h-0" style={{ overflow: 'visible' }}>
-        <div className="w-72 flex-shrink-0 min-h-0 border-r border-gray-200 bg-white overflow-y-auto">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        <div className="w-72 flex-shrink-0 border-r border-gray-200 bg-white overflow-y-auto custom-scrollbar">
           <LessonPanel
             title={lesson.title}
             description={lesson.description}
@@ -385,7 +387,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
           />
         </div>
 
-        <div className="flex-1 min-h-0" style={{ position: 'relative', minHeight: '600px' }}>
+        <div className="flex-1 min-h-0 relative bg-gray-50 overflow-hidden">
           <BlocklyWorkspace
             key={isSubmitted ? 'submitted' : 'draft'}
             ref={blocklyRef}
@@ -399,7 +401,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
           />
         </div>
 
-        <div className="w-[520px] flex-shrink-0 p-4 bg-gray-50 border-l border-gray-200">
+        <div className="w-[520px] flex-shrink-0 p-4 bg-gray-50 border-l border-gray-200 overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900">Stage</h3>
             <Button
