@@ -111,16 +111,17 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     if (toolbox) {
       forceStyle(toolbox, 'background', '#fafaf9');
-      forceStyle(toolbox, 'border-right', '2px solid #e7e5e4');
-      forceStyle(toolbox, 'padding', '16px 6px 8px 6px');
-      forceStyle(toolbox, 'min-width', '130px');
-      forceStyle(toolbox, 'overflow', 'auto');
+      forceStyle(toolbox, 'padding', '16px 8px');
+      forceStyle(toolbox, 'min-width', '110px');
+      forceStyle(toolbox, 'width', 'fit-content');
+      forceStyle(toolbox, 'overflow-x', 'hidden');
+      forceStyle(toolbox, 'overflow-y', 'auto');
       forceStyle(toolbox, 'pointer-events', 'auto');
     }
     if (group) {
       forceStyle(group, 'display', 'flex');
       forceStyle(group, 'flex-direction', 'column');
-      forceStyle(group, 'gap', '6px');
+      forceStyle(group, 'gap', '4px');
       forceStyle(group, 'width', '100%');
     }
     if (catContainer) {
@@ -160,6 +161,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       setI(el, 'background-color', bg);
       setI(el, 'box-shadow', isSelected ? '0 2px 4px rgba(0,0,0,0.1)' : 'none');
       setI(el, 'pointer-events', 'auto');
+      setI(el, 'transition', 'all 0.2s ease');
       el.setAttribute('data-selected', String(isSelected));
 
       const label = el.querySelector('.blocklyToolboxCategoryLabel') as HTMLElement;
@@ -538,16 +540,34 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         .blocklyToolboxDiv { 
           box-sizing: content-box !important; 
           background-color: #fafaf9 !important;
-          border-right: 2px solid #e7e5e4 !important;
+          border-right: 1px solid #e7e5e4 !important;
+          box-shadow: 1px 0 3px rgba(0,0,0,0.05) !important;
+        }
+        /* Style the flyout background (where the blocks are) */
+        .blocklyFlyoutBackground {
+          fill: #fafaf9 !important;
+          fill-opacity: 0.98 !important;
+          stroke: #e7e5e4 !important;
+          stroke-width: 1px !important;
+        }
+        /* Add a subtle shadow to the flyout edge */
+        .blocklyFlyout {
+          filter: drop-shadow(2px 0 3px rgba(0,0,0,0.05)) !important;
         }
         .blocklyToolboxCategoryGroup {
           display: flex !important;
           flex-direction: column !important;
-          gap: 6px !important;
-          padding: 16px 6px !important;
+          gap: 4px !important;
+          padding: 12px 6px !important;
         }
         .blocklyFlyout { pointer-events: auto !important; }
-        .blocklyFlyoutLabelText { fill: #44403c !important; }
+        .blocklyFlyoutLabelText { 
+          fill: #78716c !important; 
+          font-weight: 700 !important;
+          font-size: 11px !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+        }
         .blocklyMenuItem {
           padding: 8px 12px !important;
           font-family: system-ui, sans-serif !important;
@@ -555,6 +575,13 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         .blocklyTreeLabel {
           font-size: 13px !important;
           font-weight: 600 !important;
+        }
+        .blocklyScrollbarHandle {
+          fill: #d6d3d1 !important;
+          fill-opacity: 0.6 !important;
+        }
+        .blocklyScrollbarHandle:hover {
+          fill-opacity: 0.8 !important;
         }
       `}</style>
     </div>
