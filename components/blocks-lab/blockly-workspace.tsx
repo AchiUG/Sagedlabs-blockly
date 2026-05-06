@@ -36,6 +36,15 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   const [Blockly, setBlockly] = useState<any>(null);
   const lastVarIdRef = useRef<string | null>(null);
 
+  // Use refs for callbacks to prevent re-initializing workspace when they change
+  const onWorkspaceChangeRef = useRef(onWorkspaceChange);
+  const onBlockClickRef = useRef(onBlockClick);
+  const onPromptRef = useRef(onPrompt);
+
+  useEffect(() => { onWorkspaceChangeRef.current = onWorkspaceChange; }, [onWorkspaceChange]);
+  useEffect(() => { onBlockClickRef.current = onBlockClick; }, [onBlockClick]);
+  useEffect(() => { onPromptRef.current = onPrompt; }, [onPrompt]);
+
   const actualToolbox = toolboxConfig || defaultToolbox;
 
   // Expose methods to parent
@@ -55,8 +64,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         }
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
         const commands = workspaceToCommands(workspaceRef.current);
-        if (onWorkspaceChange) {
-          onWorkspaceChange(state, commands);
+        if (onWorkspaceChangeRef.current) {
+          onWorkspaceChangeRef.current(state, commands);
         }
       }
     },
@@ -64,7 +73,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       if (!workspaceRef.current) return [];
       return workspaceToCommands(workspaceRef.current);
     }
-  }), [Blockly, starterWorkspace, onWorkspaceChange]);
+  }), [Blockly, starterWorkspace]);
 
   // Load Blockly dynamically
   useEffect(() => {
@@ -308,12 +317,14 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
     });
 
-    // Handle custom prompt override
-    if (onPrompt) {
-      Blockly.dialog.setPrompt((message: string, defaultValue: string, callback: (val: string | null) => void) => {
-        onPrompt(message, defaultValue, callback);
-      });
-    }
+    // Handle custom prompt override using the ref to ensure it always uses the latest callback
+    Blockly.dialog.setPrompt((message: string, defaultValue: string, callback: (val: string | null) => void) => {
+      if (onPromptRef.current) {
+        onPromptRef.current(message, defaultValue, callback);
+      } else {
+        callback(window.prompt(message, defaultValue));
+      }
+    });
 
     workspaceRef.current = workspace;
 
@@ -330,10 +341,10 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     }
 
     setTimeout(() => {
-      if (onWorkspaceChange && workspaceRef.current) {
+      if (onWorkspaceChangeRef.current && workspaceRef.current) {
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
         const commands = workspaceToCommands(workspaceRef.current);
-        onWorkspaceChange(state, commands);
+        onWorkspaceChangeRef.current(state, commands);
       }
     }, 100);
 
@@ -348,7 +359,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     });
 
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObserverRef.current?.disconnect();
+      resizeObserverRef.current?.disconnect(); 
       resizeObserverRef.current = new ResizeObserver(() => doResize());
       resizeObserverRef.current.observe(containerRef.current);
     }
@@ -357,9 +368,8 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     const handleChange = (event: any) => {
       if (event.isUiEvent) return;
 
-      // Handle variable creation/renaming to update the "Intelligent" toolbox blocks
+      // ... variable handling code ...
       if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_RENAME) {
-        // console.log(`[Blockly] Variable event: ${event.type}, varId: ${event.varId}`);
         lastVarIdRef.current = event.varId;
         const ws = workspaceRef.current;
         if (ws && ws.getToolbox()) {
@@ -372,7 +382,6 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
-              // console.log(`[Blockly] Refreshing variable flyout with ${contents.length} items`);
               flyout.show(contents);
             }
           }
@@ -388,7 +397,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         const ws = workspaceRef.current;
         const allBlocks = ws.getAllBlocks(false);
         const objectNames = new Set<string>();
-        
+
         for (const block of allBlocks) {
           if (block.type === 'saged_create_object') {
             const idInput = block.getInput('ID');
@@ -407,7 +416,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         const variableMap = ws.getVariableMap();
         const existingVariables = variableMap.getVariablesOfType('');
         const existingNames = new Set(existingVariables.map((v: any) => v.name.toLowerCase()));
-        
+
         let changed = false;
         for (const name of objectNames) {
           if (!existingNames.has(name.toLowerCase())) {
@@ -416,8 +425,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
             changed = true;
           }
         }
-        
-        // If we added variables, refresh the toolbox if it's open
+
         if (changed && ws.getToolbox()) {
           const toolbox = ws.getToolbox();
           const category = toolbox.getToolboxItems().find((item: any) => 
@@ -425,11 +433,9 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           );
           const selectedItem = toolbox.getSelectedItem();
           if (category && selectedItem === category) {
-            // Force the flyout to re-render its contents immediately
             const flyout = ws.getFlyout();
             if (flyout) {
               const contents = variableCategoryCallback(ws);
-              // console.log(`[Blockly] Auto-sync: Refreshing variable flyout`);
               flyout.show(contents);
             }
           }
@@ -438,10 +444,10 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        if (onWorkspaceChange && workspaceRef.current) {
+        if (onWorkspaceChangeRef.current && workspaceRef.current) {
           const state = Blockly.serialization.workspaces.save(workspaceRef.current);
           const commands = workspaceToCommands(workspaceRef.current);
-          onWorkspaceChange(state, commands);
+          onWorkspaceChangeRef.current(state, commands);
         }
       }, 300);
     };
@@ -452,10 +458,10 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     const onClick = (event: any) => {
       if (event.type === Blockly.Events.CLICK && event.blockId) {
         const block = workspace.getBlockById(event.blockId) || workspace.getFlyout()?.getWorkspace()?.getBlockById(event.blockId);
-        if (block && onBlockClick) {
+        if (block && onBlockClickRef.current) {
           const command = blockToCommand(block);
           if (command) {
-            onBlockClick(command);
+            onBlockClickRef.current(command);
           }
         }
       }
@@ -466,7 +472,9 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     return () => {
       clearTimeout(debounceTimer);
-      resizeObserverRef.current?.disconnect(); 
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
       if (workspaceRef.current) {
         workspaceRef.current.removeChangeListener(handleChange);
         workspaceRef.current.removeChangeListener(onClick);
@@ -477,8 +485,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         workspaceRef.current = null;
       }
     };
-  }, [Blockly, readOnly, actualToolbox, onBlockClick, onWorkspaceChange, starterWorkspace, initialWorkspace, onPrompt, setupCategoryTabs]);
-
+  }, [Blockly, readOnly, actualToolbox, setupCategoryTabs]);
   useEffect(() => {
     const handleResize = () => {
       if (workspaceRef.current && Blockly) Blockly.svgResize(workspaceRef.current);
@@ -528,12 +535,26 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
       <style jsx global>{`
         .blocklyWidgetDiv, .blocklyDropDownDiv { z-index: 200 !important; }
         .blocklyTooltipDiv { z-index: 201 !important; }
-        .blocklyToolboxDiv { box-sizing: content-box !important; }
+        .blocklyToolboxDiv { 
+          box-sizing: content-box !important; 
+          background-color: #fafaf9 !important;
+          border-right: 2px solid #e7e5e4 !important;
+        }
+        .blocklyToolboxCategoryGroup {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 6px !important;
+          padding: 16px 6px !important;
+        }
         .blocklyFlyout { pointer-events: auto !important; }
         .blocklyFlyoutLabelText { fill: #44403c !important; }
         .blocklyMenuItem {
           padding: 8px 12px !important;
           font-family: system-ui, sans-serif !important;
+        }
+        .blocklyTreeLabel {
+          font-size: 13px !important;
+          font-weight: 600 !important;
         }
       `}</style>
     </div>
