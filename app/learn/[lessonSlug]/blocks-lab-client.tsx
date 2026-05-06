@@ -25,6 +25,7 @@ import Link from 'next/link';
 
 import { BlocksValidationService, ValidationResult } from '@/lib/services/blocks-validation-service';
 import BlocklyWorkspace, { BlocklyWorkspaceHandle } from '@/components/blocks-lab/blockly-workspace';
+import SpriteSelector from '@/components/blocks-lab/sprite-selector';
 
 interface BlocksLabClientProps {
   lesson: {
@@ -107,6 +108,38 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
     const result = BlocksValidationService.validate(lesson.slug, JSON.stringify(newCommands));
     setValidation(result);
   }, [lesson.slug]);
+
+  // Handle immediate block execution
+  const handleBlockClick = useCallback(async (command: any) => {
+    if (!command) return;
+    
+    // If already running, use the existing interpreter
+    if (isRunning && interpreterRef.current) {
+      await interpreterRef.current.executeAction(command);
+    } else {
+      // Create a temporary interpreter to run just this block on the current state
+      const tempInterpreter = new CommandInterpreter([], stageState);
+      tempInterpreter.start((newState) => {
+        setStageState({ ...newState });
+      }, handleInterpreterPrompt);
+
+      // Sync the selected sprite to the temp interpreter
+      tempInterpreter.setSelectedSpriteId(stageState.selectedSpriteId);
+      
+      await tempInterpreter.executeAction(command);
+      tempInterpreter.stop();
+    }
+  }, [isRunning, stageState, handleInterpreterPrompt]);
+
+  const handleSpriteSelect = useCallback((id: string) => {
+    setStageState(prev => ({
+      ...prev,
+      selectedSpriteId: id
+    }));
+    if (interpreterRef.current) {
+      interpreterRef.current.setSelectedSpriteId(id);
+    }
+  }, []);
 
   // Auto-save effect
   useEffect(() => {
@@ -360,6 +393,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
             starterWorkspace={lesson.starterWorkspace}
             toolboxConfig={toolbox}
             onWorkspaceChange={handleWorkspaceChange}
+            onBlockClick={handleBlockClick}
             onPrompt={handleBlocklyPrompt}
             readOnly={isSubmitted}
           />
@@ -381,6 +415,12 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
             width={lesson.stageConfig?.width || 480}
             height={lesson.stageConfig?.height || 360}
           />
+          
+          <SpriteSelector 
+            state={stageState} 
+            onSelect={handleSpriteSelect} 
+          />
+
           {isRunning && (
             <p className="text-xs text-gray-500 mt-2 text-center">
               Use arrow keys to control the sprite

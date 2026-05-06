@@ -172,6 +172,18 @@ export default function StageCanvas({
 
     ctx.restore();
 
+    // Draw selection highlight if this is the selected sprite
+    if (state.selectedSpriteId === sprite.id) {
+      ctx.save();
+      ctx.strokeStyle = '#124734';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // Draw speech bubble if message exists
     if (sprite.message) {
       drawSpeechBubble(ctx, x, y - (size * 0.8), sprite.message);

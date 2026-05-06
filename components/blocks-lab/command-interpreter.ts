@@ -27,6 +27,7 @@ export interface StageState {
   pressedKeys: Set<string>;
   running: boolean;
   lastAnswer: string;
+  selectedSpriteId: string;
 }
 
 export function createInitialState(config?: any): StageState {
@@ -57,6 +58,7 @@ export function createInitialState(config?: any): StageState {
     pressedKeys: new Set(),
     running: false,
     lastAnswer: '',
+    selectedSpriteId: 'main',
   };
 }
 
@@ -78,6 +80,33 @@ export class CommandInterpreter {
     this.foreverLoops = [];
     this.startActions = [];
     this.parseCommands();
+  }
+
+  setSelectedSpriteId(id: string) {
+    if (this.state.sprites[id]) {
+      this.state.selectedSpriteId = id;
+      this.onUpdate?.(this.state);
+    }
+  }
+
+  getSelectedSpriteId(): string {
+    return this.state.selectedSpriteId;
+  }
+
+  /**
+   * Execute a single action immediately (Scratch-like click-to-run)
+   */
+  async executeAction(action: any) {
+    if (!action) return;
+    
+    // Temporarily set current sprite to the globally selected one
+    const originalCurrentId = this.currentSpriteId;
+    this.currentSpriteId = this.state.selectedSpriteId;
+    
+    await this.executeActions([action]);
+    
+    this.currentSpriteId = originalCurrentId;
+    this.onUpdate?.(this.state);
   }
 
   private parseCommands() {

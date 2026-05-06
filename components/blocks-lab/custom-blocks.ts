@@ -515,7 +515,7 @@ export function workspaceToCommands(workspace: any): any[] {
   return commands;
 }
 
-function blockToCommand(block: any): any {
+export function blockToCommand(block: any): any {
   switch (block.type) {
     case 'saged_on_start':
       return {

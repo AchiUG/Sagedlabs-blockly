@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
-import { defineCustomBlocks, workspaceToCommands } from './custom-blocks';
+import { defineCustomBlocks, workspaceToCommands, blockToCommand } from './custom-blocks';
 import { defaultToolbox } from './toolbox-config';
 
 interface BlocklyWorkspaceProps {
@@ -9,6 +9,7 @@ interface BlocklyWorkspaceProps {
   starterWorkspace?: any;
   toolboxConfig?: any;
   onWorkspaceChange?: (workspace: any, commands: any[]) => void;
+  onBlockClick?: (command: any) => void;
   onPrompt?: (message: string, defaultValue: string, callback: (val: string | null) => void) => void;
   readOnly?: boolean;
 }
@@ -23,6 +24,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
   starterWorkspace,
   toolboxConfig,
   onWorkspaceChange,
+  onBlockClick,
   onPrompt,
   readOnly = false,
 }, ref) => {
@@ -445,12 +447,29 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     };
 
     workspace.addChangeListener(handleChange);
+
+    // Add click listener for immediate execution (Scratch-like)
+    const onClick = (event: any) => {
+      if (event.type === Blockly.Events.CLICK && event.blockId) {
+        const block = workspace.getBlockById(event.blockId) || workspace.getFlyout()?.getWorkspace()?.getBlockById(event.blockId);
+        if (block && onBlockClick) {
+          const command = blockToCommand(block);
+          if (command) {
+            onBlockClick(command);
+          }
+        }
+      }
+    };
+    workspace.addChangeListener(onClick);
+
     setIsLoaded(true);
 
     return () => {
       clearTimeout(debounceTimer);
       resizeObserverRef.current?.disconnect(); 
       if (workspaceRef.current) {
+        workspaceRef.current.removeChangeListener(handleChange);
+        workspaceRef.current.removeChangeListener(onClick);
         if ((workspaceRef.current as any)._toolboxListener) {
           workspaceRef.current.removeChangeListener((workspaceRef.current as any)._toolboxListener);
         }
@@ -458,7 +477,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
         workspaceRef.current = null;
       }
     };
-  }, [Blockly, readOnly, actualToolbox]);
+  }, [Blockly, readOnly, actualToolbox, onBlockClick, onWorkspaceChange, starterWorkspace, initialWorkspace, onPrompt, setupCategoryTabs]);
 
   useEffect(() => {
     const handleResize = () => {
