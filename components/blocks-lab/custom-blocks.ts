@@ -168,17 +168,48 @@ export function defineCustomBlocks(Blockly: any) {
         nextStatement: null,
         colour: 230,
         tooltip: 'Set sprite direction angle'
-      },
-      {
-        type: 'saged_point_towards',
-        message0: '🎯 Point towards %1',
-        args0: [{ type: 'input_value', name: 'ID', check: 'String' }],
-        previousStatement: null,
-        nextStatement: null,
-        colour: 230,
-        tooltip: 'Point towards another object'
       }
     ]);
+  });
+
+  safeDefine(Blockly, 'saged_point_towards', () => {
+    Blockly.Blocks['saged_point_towards'] = {
+      init: function(this: any) {
+        const spriteDropdown = new FieldDropdown(() => {
+          const options: [string, string][] = [['main', 'main']];
+          if (this.workspace) {
+            const allBlocks = this.workspace.getAllBlocks(false);
+            for (const block of allBlocks) {
+              if (block.type === 'saged_create_object') {
+                const idInput = block.getInput('ID');
+                if (idInput && idInput.connection && idInput.connection.targetBlock()) {
+                  const target = idInput.connection.targetBlock();
+                  if (target.type === 'text') {
+                    const name = target.getFieldValue('TEXT');
+                    if (name && name.trim()) {
+                      options.push([name.trim(), name.trim()]);
+                    }
+                  }
+                }
+              }
+            }
+          }
+          const unique = Array.from(new Set(options.map(o => o[1]))).map(id => {
+            const opt = options.find(o => o[1] === id);
+            return opt || [id, id];
+          });
+          return unique.length > 0 ? unique : [['main', 'main']];
+        });
+
+        this.appendDummyInput()
+          .appendField('🎯 Point towards')
+          .appendField(spriteDropdown, 'ID');
+        this.setPreviousStatement(true);
+        this.setNextStatement(true);
+        this.setColour(230);
+        this.setTooltip('Point towards another object');
+      }
+    };
   });
 
   // ============================================
@@ -405,6 +436,7 @@ export function defineCustomBlocks(Blockly: any) {
             options: [
               ['🐰 Hare', 'hare'],
               ['🦁 Lion', 'lion'],
+              ['🥕 Carrot', 'carrot'],
               ['🍎 Food', 'food'],
               ['💧 Water', 'water'],
               ['🏠 Home', 'home']
@@ -419,6 +451,28 @@ export function defineCustomBlocks(Blockly: any) {
         nextStatement: null,
         colour: 260,
         tooltip: 'Create a new object on the stage'
+      },
+      {
+        type: 'saged_set_backdrop',
+        message0: '🖼️ Set backdrop to %1',
+        args0: [
+          {
+            type: 'field_dropdown',
+            name: 'BACKDROP',
+            options: [
+              ['Savanna', 'savanna'],
+              ['Forest', 'forest'],
+              ['Desert', 'desert'],
+              ['Arctic', 'arctic'],
+              ['Space', 'space'],
+              ['None', 'none']
+            ]
+          }
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 260,
+        tooltip: 'Change the stage environment'
       },
       {
         type: 'saged_remove_object',
@@ -537,7 +591,7 @@ function blockToCommand(block: any): any {
     case 'saged_point_towards':
       return {
         type: 'POINT_TOWARDS',
-        id: getInputValue(block, 'ID', 'main'),
+        id: block.getFieldValue('ID') || 'main',
       };
 
     case 'saged_say':
@@ -586,6 +640,12 @@ function blockToCommand(block: any): any {
         x: getInputValue(block, 'X', 0),
         y: getInputValue(block, 'Y', 0),
         id: getInputValue(block, 'ID', 'object1'),
+      };
+
+    case 'saged_set_backdrop':
+      return {
+        type: 'SET_BACKDROP',
+        backdrop: block.getFieldValue('BACKDROP'),
       };
 
     case 'saged_remove_object':

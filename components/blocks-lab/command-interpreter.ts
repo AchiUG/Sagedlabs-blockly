@@ -2,7 +2,7 @@
 
 export interface SpriteState {
   id: string;
-  type: 'hare' | 'lion' | 'food' | 'water' | 'home';
+  type: 'hare' | 'lion' | 'food' | 'water' | 'home' | 'carrot';
   x: number;
   y: number;
   rotation: number; // in degrees
@@ -16,9 +16,12 @@ export interface SpriteState {
   directionY: number;
 }
 
+export type BackdropType = 'savanna' | 'forest' | 'desert' | 'arctic' | 'space' | 'none';
+
 export interface StageState {
   width: number;
   height: number;
+  backdrop: BackdropType;
   sprites: { [key: string]: SpriteState };
   variables: { [key: string]: any };
   pressedKeys: Set<string>;
@@ -32,6 +35,7 @@ export function createInitialState(config?: any): StageState {
   return {
     width,
     height,
+    backdrop: config?.backdrop || 'savanna',
     sprites: {
       main: {
         id: 'main',
@@ -180,13 +184,20 @@ export class CommandInterpreter {
       switch (action.type) {
         case 'CREATE_SPRITE':
           const id = String(this.evaluateCondition(action.id));
+          let spriteColor = '#124734'; // Default Green
+          if (action.spriteType === 'lion') spriteColor = '#ea580c';
+          else if (action.spriteType === 'carrot') spriteColor = '#f97316';
+          else if (action.spriteType === 'food') spriteColor = '#ef4444';
+          else if (action.spriteType === 'water') spriteColor = '#3b82f6';
+          else if (action.spriteType === 'home') spriteColor = '#f59e0b';
+
           this.state.sprites[id] = {
             id,
             type: (action.spriteType as any) || 'food',
             x: (this.state.width / 2) + (Number(this.evaluateCondition(action.x)) || 0),
             y: (this.state.height / 2) - (Number(this.evaluateCondition(action.y)) || 0),
             rotation: 0,
-            color: action.spriteType === 'lion' ? '#ef4444' : action.spriteType === 'water' ? '#3b82f6' : '#124734',
+            color: spriteColor,
             size: 100,
             visible: true,
             message: '',
@@ -243,11 +254,14 @@ export class CommandInterpreter {
             const dx = target.x - sprite.x;
             const dy = target.y - sprite.y;
             // Math.atan2 returns radians, convert to degrees
-            // In canvas, positive Y is down, so we might need to adjust based on visual expectation
-            // Standard atan2(dy, dx) gives angle from X-axis towards Y-axis
             const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-            sprite.rotation = angle;
+            // Since our sprites are drawn facing "up" by default (0 rotation),
+            // and atan2(0, 1) is 0 degrees (right), we add 90 degrees to make "up" point "right"
+            sprite.rotation = angle + 90;
           }
+          break;
+        case 'SET_BACKDROP':
+          this.state.backdrop = action.backdrop as BackdropType;
           break;
         case 'SAY':
           sprite.message = String(this.evaluateCondition(action.text) ?? '');
