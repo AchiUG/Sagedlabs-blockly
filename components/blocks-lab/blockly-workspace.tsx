@@ -186,6 +186,19 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     cats.forEach((cat: Element) => styleTab(cat as HTMLElement, false));
 
     const applySelection = (selectedId: string | null) => {
+      const workspace = workspaceRef.current;
+      if (!workspace) return;
+
+      const toolbox = workspace.getToolbox();
+      const currentSelected = toolbox?.getSelectedItem()?.id_;
+
+      // If clicking the already selected item, deselect it to collapse
+      if (selectedId && currentSelected === selectedId) {
+        toolbox.selectItemByPosition(-1); // Deselects
+        cats.forEach((cat: Element) => styleTab(cat as HTMLElement, false));
+        return;
+      }
+
       cats.forEach((cat: Element) => {
         const el = cat as HTMLElement;
         styleTab(el, el.id === selectedId);
@@ -194,14 +207,21 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
 
     cats.forEach((cat: Element) => {
       const el = cat as HTMLElement;
-      el.addEventListener('click', () => applySelection(el.id));
+      el.addEventListener('click', () => {
+        applySelection(el.id);
+      });
     });
 
     if (workspaceRef.current) {
       const workspace = workspaceRef.current;
       const onToolboxSelect = (event: any) => {
         if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
-          applySelection(event.newItem || null);
+          // Sync UI state when Blockly changes selection (e.g. from code)
+          const selectedId = event.newItem;
+          cats.forEach((cat: Element) => {
+            const el = cat as HTMLElement;
+            styleTab(el, el.id === selectedId);
+          });
         }
       };
       workspace.addChangeListener(onToolboxSelect);
@@ -331,7 +351,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     workspaceRef.current = workspace;
 
     const flyout = workspace.getFlyout();
-    if (flyout) (flyout as any).autoClose = false;
+    if (flyout) (flyout as any).autoClose = true;
 
     const workspaceToLoad = initialWorkspace || starterWorkspace;
     if (workspaceToLoad) {
@@ -550,9 +570,15 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           stroke: #e7e5e4 !important;
           stroke-width: 1px !important;
         }
+        /* Make the flyout itself clean when closed */
+        .blocklyFlyout[style*="display: none"],
+        .blocklyFlyout[style*="visibility: hidden"] {
+          filter: none !important;
+        }
         /* Add a subtle shadow to the flyout edge */
         .blocklyFlyout {
-          filter: drop-shadow(2px 0 3px rgba(0,0,0,0.05)) !important;
+          filter: drop-shadow(2px 0 4px rgba(0,0,0,0.08)) !important;
+          transition: transform 0.2s ease, opacity 0.2s ease !important;
         }
         .blocklyToolboxCategoryGroup {
           display: flex !important;
@@ -576,12 +602,29 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
           font-size: 13px !important;
           font-weight: 600 !important;
         }
+        /* Scrollbar hiding logic */
+        .blocklyScrollbarVertical, .blocklyScrollbarHorizontal {
+          opacity: 0 !important;
+          transition: opacity 0.3s ease !important;
+        }
+        .blocklyFlyout:hover .blocklyScrollbarVertical,
+        .blocklyFlyout:hover .blocklyScrollbarHorizontal,
+        .blocklyWorkspace:hover .blocklyScrollbarVertical,
+        .blocklyWorkspace:hover .blocklyScrollbarHorizontal {
+          opacity: 1 !important;
+        }
         .blocklyScrollbarHandle {
           fill: #d6d3d1 !important;
-          fill-opacity: 0.6 !important;
+          fill-opacity: 0.4 !important;
+          rx: 4px !important;
+          ry: 4px !important;
         }
         .blocklyScrollbarHandle:hover {
           fill-opacity: 0.8 !important;
+        }
+        .blocklyScrollbarBackground {
+          fill: transparent !important;
+          stroke: none !important;
         }
       `}</style>
     </div>
