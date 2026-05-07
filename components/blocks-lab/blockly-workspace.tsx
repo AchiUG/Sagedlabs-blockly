@@ -351,7 +351,7 @@ const BlocklyWorkspace = forwardRef<BlocklyWorkspaceHandle, BlocklyWorkspaceProp
     workspaceRef.current = workspace;
 
     const flyout = workspace.getFlyout();
-    if (flyout) (flyout as any).autoClose = true;
+    if (flyout) (flyout as any).autoClose = false;
 
     const workspaceToLoad = initialWorkspace || starterWorkspace;
     if (workspaceToLoad) {
