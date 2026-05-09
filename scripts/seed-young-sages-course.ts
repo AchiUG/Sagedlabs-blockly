@@ -1162,6 +1162,23 @@ async function main() {
         videoUrl: '',
         duration: 90,
         order: 4
+      },
+      {
+        title: 'Final Wisdom Assessment',
+        slug: 'ys-final-assessment',
+        description: 'Complete your final assessment to receive your official Young Sages Certificate.',
+        content: `<h2>The Final Step 🎓</h2>
+<p>Congratulations on reaching the end of your Young Sages journey! You have observed, strategized, and built amazing things.</p>
+<p>Before we celebrate with your certificate, we have one last activity: The Final Wisdom Assessment.</p>
+<div style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
+  <a href="/young-sages/assessment" style="background-color: #124734; color: white; padding: 16px 32px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.1em; display: inline-block; transition: background-color 0.2s;">
+    Start Final Assessment →
+  </a>
+</div>
+<p>This assessment will help us see how much you've grown and what kind of Sage you've become. Good luck!</p>`,
+        videoUrl: '',
+        duration: 15,
+        order: 5
       }
     ]
   });

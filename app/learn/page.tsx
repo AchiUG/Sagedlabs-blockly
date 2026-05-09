@@ -161,13 +161,35 @@ export default async function LearnPage() {
                   </Card>
                 </Link>
               ))}
+
+              {/* Standard Lesson Card for Assessment */}
+              <Link href="/young-sages/assessment">
+                <Card className="h-full hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-[#D9A441] hover:border-[#124734] bg-white">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#D9A441] to-[#b8862d] flex items-center justify-center text-white text-xl font-bold">
+                        {youngSagesLessons.length + 1}
+                      </div>
+                      <Badge variant="outline" className="border-[#D9A441] text-[#D9A441]">Final Step</Badge>
+                    </div>
+                    <CardTitle className="text-lg mt-3 text-[#124734]">Final Wisdom Assessment</CardTitle>
+                    <CardDescription>Show your wisdom and become a true Sage!</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-[#124734] font-medium">
+                      <span>Start Assessment</span>
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </section>
         )}
 
         {/* Original Lessons Section */}
         {originalLessons.length > 0 && (
-          <section>
+          <section className="mb-12">
             <div className="flex items-center gap-3 mb-6">
               <span className="text-3xl">🧱</span>
               <div>
@@ -201,6 +223,30 @@ export default async function LearnPage() {
                   </Card>
                 </Link>
               ))}
+
+              {/* Assessment Card in Core Lessons if Leuk lessons are here */}
+              {originalLessons.some(l => l.slug === 'capstone-project') && (
+                <Link href="/young-sages/assessment">
+                  <Card className="h-full hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-[#D9A441] hover:border-[#124734] bg-white">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#D9A441] to-[#b8862d] flex items-center justify-center text-white font-bold">
+                          {originalLessons.length + 1}
+                        </div>
+                        <Badge variant="outline" className="border-[#D9A441] text-[#D9A441] text-[10px] h-5">Final Step</Badge>
+                      </div>
+                      <CardTitle className="text-base mt-2 text-[#124734]">Final Assessment</CardTitle>
+                      <CardDescription className="text-sm">Show your wisdom!</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center text-[#124734] text-sm font-medium">
+                        <span>Open</span>
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )}
             </div>
           </section>
         )}

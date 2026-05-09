@@ -375,6 +375,7 @@ export default function BlocksLabClient({ lesson, nextLessonSlug, project, userI
           onSubmit={handleOpenSubmitDialog}
           lastSaved={lastSaved}
           nextLessonSlug={nextLessonSlug}
+          currentLessonSlug={lesson.slug}
         />
       </div>
 

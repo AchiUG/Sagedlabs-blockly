@@ -99,6 +99,41 @@ export default function Dashboard({ user, session, dashboardData, userRole }: Da
       {/* Gamification Widget */}
       <GamificationWidget />
 
+      {/* Young Sage Achievement - Only show if completed assessment */}
+      {user?.progress?.some((p: any) => p.lesson.title === 'Final Wisdom Assessment' && p.completed) && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative overflow-hidden rounded-2xl border-2 border-[#D9A441] bg-gradient-to-r from-[#124734] to-[#0d3324] p-8 text-white shadow-xl"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-20">
+            <Award className="h-32 w-32" />
+          </div>
+          <div className="relative flex flex-col md:flex-row items-center gap-6">
+            <div className="h-24 w-24 rounded-full bg-[#D9A441] flex items-center justify-center text-4xl shadow-lg border-4 border-white/20">
+              ✨
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl font-bold mb-2">You are a Young Sage! 🎓</h2>
+              <p className="text-gray-200 mb-4 max-w-xl">
+                Congratulations! You've mastered the wisdom of Leuk the Hare and completed the program. 
+                Your journey from Observer to Builder is complete.
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <Link href="/young-sages/completion">
+                  <Button className="bg-[#D9A441] hover:bg-[#c6953a] text-[#124734] font-bold">
+                    View My Sage Journey
+                  </Button>
+                </Link>
+                <Button variant="outline" className="border-white/30 hover:bg-white/10 text-white">
+                  Share Achievement
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Current Courses */}
       <Card className="saged-card">
         <CardHeader>

@@ -224,6 +224,15 @@ const INITIAL_BADGES = [
     xpReward: 5000,
     rarity: 'LEGENDARY',
     criteria: JSON.stringify({ type: 'stage_reached', stage: 7 })
+  },
+  {
+    name: 'Young Sage',
+    description: 'Complete the Young Sages program and show your wisdom',
+    iconName: 'Sparkles',
+    category: 'SPECIAL',
+    xpReward: 1000,
+    rarity: 'EPIC',
+    criteria: JSON.stringify({ type: 'young_sages_completed', count: 1 })
   }
 ];
 

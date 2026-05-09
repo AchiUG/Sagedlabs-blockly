@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Square, RotateCcw, Save, Send, Loader2, ArrowRight } from 'lucide-react';
+import { Play, Square, RotateCcw, Save, Send, Loader2, ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 interface LabToolbarProps {
@@ -16,6 +16,7 @@ interface LabToolbarProps {
   onSubmit: () => void;
   lastSaved?: Date | null;
   nextLessonSlug: string | null;
+  currentLessonSlug?: string;
 }
 
 export default function LabToolbar({
@@ -29,12 +30,15 @@ export default function LabToolbar({
   onSubmit,
   lastSaved,
   nextLessonSlug,
+  currentLessonSlug,
 }: LabToolbarProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const isCapstone = currentLessonSlug === 'capstone-project';
 
   return (
     <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-2">
@@ -81,6 +85,19 @@ export default function LabToolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Final Assessment Button (only for capstone) */}
+        {isSubmitted && isCapstone && (
+          <Link href="/young-sages/assessment">
+            <Button
+              className="gap-1 bg-[#D9A441] hover:bg-[#c6953a] text-white"
+              size="sm"
+            >
+              Final Assessment
+              <Sparkles className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
+        )}
+
         {/* Next Lesson Button (only if submitted and next lesson exists) */}
         {isSubmitted && nextLessonSlug && (
           <Link href={`/learn/${nextLessonSlug}`}>

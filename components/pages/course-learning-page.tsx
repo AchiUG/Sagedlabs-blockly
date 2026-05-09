@@ -344,9 +344,10 @@ export default function CourseLearningPage({
                 </TabsList>
                 <TabsContent value="overview" className="space-y-4">
                   {currentLesson.content && (
-                    <div className="prose max-w-none">
-                      <p className="text-gray-700">{currentLesson.content}</p>
-                    </div>
+                    <div 
+                      className="prose max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: currentLesson.content }}
+                    />
                   )}
                 </TabsContent>
                 <TabsContent value="resources">

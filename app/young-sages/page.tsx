@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +24,7 @@ import {
 } from "lucide-react";
 
 export default function YoungSagesLandingPage() {
+  const { data: session } = useSession();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +60,35 @@ export default function YoungSagesLandingPage() {
       setMessage({ type: "error", text: "Something went wrong. Please try again." });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const router = useRouter();
+  const [isPaying, setIsPaying] = useState(false);
+
+  const handlePayment = async () => {
+    setIsPaying(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "price_placeholder_young_sages", // User needs to replace this with real Stripe Price ID
+        }),
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // If not logged in, redirect to signup
+        router.push("/auth/signup?program=young-sages");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      router.push("/auth/signup?program=young-sages");
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -121,11 +153,31 @@ export default function YoungSagesLandingPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link href="/auth/signup/young-sages">
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg">
-                  Apply Now <ArrowRight className="ml-2 w-5 h-5" />
+              {session ? (
+                <Link href="/learn">
+                  <Button size="lg" className="bg-[#124734] hover:bg-[#0d3324] text-white px-8 py-6 text-lg">
+                    Resume My Journey <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  onClick={handlePayment} 
+                  disabled={isPaying}
+                  size="lg" 
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg"
+                >
+                  {isPaying ? (
+                    <>
+                      <Loader2 className="mr-2 w-5 h-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Join & Pay Now <ArrowRight className="ml-2 w-5 h-5" />
+                    </>
+                  )}
                 </Button>
-              </Link>
+              )}
               <a href="#newsletter">
                 <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50 px-8 py-6 text-lg">
                   <Mail className="mr-2 w-5 h-5" /> Get Updates
@@ -330,16 +382,31 @@ export default function YoungSagesLandingPage() {
               Limited to 10 students per cohort for personalized attention.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup/young-sages">
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg">
-                  Apply for Season 1 <ArrowRight className="ml-2 w-5 h-5" />
+              {session ? (
+                <Link href="/learn">
+                  <Button size="lg" className="bg-[#124734] hover:bg-[#0d3324] text-white px-8 py-6 text-lg">
+                    Resume My Journey <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  onClick={handlePayment} 
+                  disabled={isPaying}
+                  size="lg" 
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg"
+                >
+                  {isPaying ? (
+                    <>
+                      <Loader2 className="mr-2 w-5 h-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Join Season 1 Now <ArrowRight className="ml-2 w-5 h-5" />
+                    </>
+                  )}
                 </Button>
-              </Link>
-              <Link href="/joye/young-sages/signup">
-                <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50 px-8 py-6 text-lg">
-                  <Calendar className="mr-2 w-5 h-5" /> Detailed Application
-                </Button>
-              </Link>
+              )}
             </div>
           </div>
         </div>
