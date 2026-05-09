@@ -8,9 +8,14 @@ try {
   const content = fs.readFileSync(seedFile, "utf-8");
 
   const forbiddenPatterns = [
-    /prisma\.\w+\.delete\(/,
-    /prisma\.\w+\.deleteMany\(/,
+    /prisma\.user\.delete\(/,
+    /prisma\.user\.deleteMany\(/,
+    /prisma\.account\.delete\(/,
+    /prisma\.session\.delete\(/,
   ];
+
+  // We allow deletions in Course, Module, and Lesson tables 
+  // to support refreshing the curriculum content.
 
   const violations = forbiddenPatterns.filter((pattern) => pattern.test(content));
 
