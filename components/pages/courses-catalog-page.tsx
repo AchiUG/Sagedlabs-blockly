@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,9 @@ import {
   CheckCircle,
   Search,
   GraduationCap,
+  Sparkles,
+  Loader2,
+  ArrowRight
 } from 'lucide-react';
 
 interface CoursesPageProps {
@@ -33,6 +37,33 @@ export default function CoursesCatalogPage({
 }: CoursesPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [isPaying, setIsPaying] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handlePayment = async (courseId: string) => {
+    setIsPaying(courseId);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "price_placeholder_young_sages", // User needs to replace this with real Stripe Price ID
+        }),
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        router.push("/auth/signup?program=young-sages");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      router.push("/auth/signup?program=young-sages");
+    } finally {
+      setIsPaying(null);
+    }
+  };
 
   // Filter courses based on search and level
   const filteredCourses = courses.filter((course) => {
@@ -147,8 +178,8 @@ export default function CoursesCatalogPage({
               return (
                 <Card
                   key={course.id}
-                  className={`hover:shadow-lg transition-shadow ${
-                    !canAccess ? 'opacity-75' : ''
+                  className={`hover:shadow-lg transition-all duration-300 flex flex-col ${
+                    !canAccess ? 'border-amber-100' : ''
                   }`}
                 >
                   <CardHeader>
@@ -161,8 +192,12 @@ export default function CoursesCatalogPage({
                         </Badge>
                       )}
                       {!canAccess && (
-                        <Badge variant="outline" className="bg-gray-100 text-gray-700">
-                          <Lock className="w-3 h-3 mr-1" />
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                          {course.title.toLowerCase().includes('young sages') ? (
+                            <Sparkles className="w-3 h-3 mr-1" />
+                          ) : (
+                            <Lock className="w-3 h-3 mr-1" />
+                          )}
                           Locked
                         </Badge>
                       )}
@@ -172,8 +207,8 @@ export default function CoursesCatalogPage({
                       {course.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <div className="space-y-4 mb-6">
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <span className="flex items-center">
                           <BookOpen className="w-4 h-4 mr-1" />
@@ -195,18 +230,39 @@ export default function CoursesCatalogPage({
                           {course._count.enrollments} enrolled
                         </span>
                       </div>
+                    </div>
 
+                    <div className="space-y-3">
                       {canAccess ? (
-                        <Link href={`/courses/${course.id}`}>
-                          <Button className="w-full">
+                        <Link href={`/courses/${course.id}`} className="block">
+                          <Button className="w-full saged-button">
                             {enrolled ? 'Continue Learning' : 'View Course'}
                           </Button>
                         </Link>
                       ) : (
-                        <Button className="w-full" disabled>
-                          <Lock className="w-4 h-4 mr-2" />
-                          Enrollment Required
-                        </Button>
+                        <>
+                          {course.title.toLowerCase().includes('young sages') ? (
+                            <Button 
+                              className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                              onClick={() => handlePayment(course.id)}
+                              disabled={isPaying === course.id}
+                            >
+                              {isPaying === course.id ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <Sparkles className="w-4 h-4 mr-2" />
+                              )}
+                              Join & Pay Now
+                            </Button>
+                          ) : (
+                            <Link href={`/waitlist/${course.slug || 'default'}`} className="block">
+                              <Button variant="outline" className="w-full border-amber-600 text-amber-700">
+                                Join Waitlist
+                                <ArrowRight className="ml-2 w-4 h-4" />
+                              </Button>
+                            </Link>
+                          )}
+                        </>
                       )}
                     </div>
                   </CardContent>

@@ -45,6 +45,11 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new Error('Please verify your email before signing in');
+        }
+
         // For other users, check hashed password
         const isValid = await bcryptjs.compare(credentials.password, user.password || '');
 

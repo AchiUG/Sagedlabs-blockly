@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Brain, 
@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 const QUESTIONS = [
   {
@@ -35,18 +36,6 @@ const QUESTIONS = [
   {
     id: 2,
     type: "mcq",
-    question: "Why did Leuk remember the pattern of the footprints?",
-    options: [
-      { text: "To count how many lions were in the savanna", value: "a" },
-      { text: "To check if anyone came out of the cave after going in", value: "b" },
-      { text: "To draw them later in the sand", value: "c" },
-      { text: "He was just practicing his memory", value: "d" }
-    ],
-    correctAnswer: "b"
-  },
-  {
-    id: 3,
-    type: "mcq",
     question: "In AI systems, what is a 'signal'?",
     options: [
       { text: "A loud noise that warns everyone", value: "a" },
@@ -57,26 +46,62 @@ const QUESTIONS = [
     correctAnswer: "b"
   },
   {
-    id: 4,
+    id: 3,
     type: "mcq",
-    question: "What makes a 'Strategist' different from an 'Observer'?",
+    question: "What happens when Leuk the Hare uses the exact same trick twice on the Lion?",
     options: [
-      { text: "They have better eyesight and can see further", value: "a" },
-      { text: "They use their memories to plan their next move", value: "b" },
-      { text: "They are faster runners than observers", value: "c" },
-      { text: "They are older and have more experience", value: "d" }
+      { text: "The Lion forgets the first time and falls for it again", value: "a" },
+      { text: "The Lion anticipates the trick and it becomes dangerous", value: "b" },
+      { text: "The Lion decides to become friends with the Hare", value: "c" },
+      { text: "The Hare gets twice as many rewards", value: "d" }
     ],
     correctAnswer: "b"
   },
   {
+    id: 4,
+    type: "mcq",
+    question: "Intelligence is not just memory. According to Leuk, what else is it?",
+    options: [
+      { text: "Being the fastest runner in the savanna", value: "a" },
+      { text: "Having the loudest roar", value: "b" },
+      { text: "Updating memory when patterns change", value: "c" },
+      { text: "Storing as much data as possible without changing", value: "d" }
+    ],
+    correctAnswer: "c"
+  },
+  {
     id: 5,
+    type: "mcq",
+    question: "Leuk wants to use the reflection trick, but the water is muddy. What is the wisest move?",
+    options: [
+      { text: "Try the trick anyway and hope for the best", value: "a" },
+      { text: "Wait patiently for conditions to improve", value: "b" },
+      { text: "Jump into the water to clear it up", value: "c" },
+      { text: "Give up and find a new home", value: "d" }
+    ],
+    correctAnswer: "b"
+  },
+  {
+    id: 6,
+    type: "mcq",
+    question: "Which of these should a 'Young Sage' NOT let an AI decide alone?",
+    options: [
+      { text: "What color a robot should be", value: "a" },
+      { text: "What time a sprinkler should turn on", value: "b" },
+      { text: "Who is guilty or innocent in a disagreement", value: "c" },
+      { text: "How fast a toy car should move", value: "d" }
+    ],
+    correctAnswer: "c"
+  },
+  {
+    id: 7,
     type: "written",
     question: "Imagine you are Leuk the Hare. You see a new pattern in the savanna. How would you use your 'AI Thinking' (Observe, Remember, Strategize) to stay safe?",
     placeholder: "I would observe...",
     icon: Lightbulb
   },
   {
-    id: 6,
+    id: 8,
     type: "written",
     question: "If you could build a 'Sage Tool' to help your community, what would it be and how would it use observation?",
     placeholder: "My Sage Tool would be...",
@@ -86,10 +111,22 @@ const QUESTIONS = [
 
 export default function YoungSagesAssessmentPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [studentName, setStudentName] = useState("");
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Automatically inherit name from session if available
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.name && !studentName) {
+      setStudentName(session.user.name);
+      // Only skip if we're on the first step
+      if (currentStep === 0) {
+        setCurrentStep(1);
+      }
+    }
+  }, [session, status, currentStep, studentName]);
 
   const totalSteps = QUESTIONS.length + 1; // +1 for the name step
   const progress = ((currentStep + 1) / totalSteps) * 100;
@@ -124,7 +161,7 @@ export default function YoungSagesAssessmentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: studentName,
+          name: studentName || session?.user?.name || "Young Sage",
           answers,
           mcScore,
           type: "young-sages-final"
@@ -133,7 +170,7 @@ export default function YoungSagesAssessmentPage() {
 
       const data = await response.json();
       if (data.id) {
-        router.push(`/young-sages/completion?id=${data.id}&name=${encodeURIComponent(studentName)}`);
+        router.push(`/young-sages/completion?id=${data.id}&name=${encodeURIComponent(studentName || session?.user?.name || "Young Sage")}`);
       }
     } catch (error) {
       console.error("Submission error:", error);

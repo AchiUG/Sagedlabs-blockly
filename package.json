@@ -22,7 +22,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push --accept-data-loss && next build && pnpm tsx --require dotenv/config scripts/seed-blocks-lessons.ts",
+    "build": "prisma generate && prisma db push --accept-data-loss && next build",
     "postbuild": "tsx --require dotenv/config scripts/safe-seed.ts",
     "postinstall": "prisma generate",
     "start": "next start",

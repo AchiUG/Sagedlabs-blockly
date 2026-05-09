@@ -262,6 +262,11 @@ export default function HomePage() {
                   Discover Your Path <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
+              <Link href="/young-sages" className="block">
+                <Button size="lg" className="bg-[#D9A441] hover:bg-[#c49235] text-white text-lg px-8 py-6 h-auto font-bold">
+                  Register for Young Sages Program
+                </Button>
+              </Link>
               <Link href="/curriculum" className="block">
                 <Button size="lg" className="saged-button text-lg px-8 py-6 h-auto font-bold">
                   View Learning Stages

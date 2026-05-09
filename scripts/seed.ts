@@ -17,6 +17,13 @@ async function main() {
     console.warn('⚠️ Warning: seed-blocks-lessons.ts failed, continuing...');
   }
 
+  try {
+    execSync('pnpm tsx --require dotenv/config scripts/seed-young-sages-course.ts', { stdio: 'inherit' });
+    console.log('✅ Young Sages course seeded');
+  } catch (err) {
+    console.warn('⚠️ Warning: seed-young-sages-course.ts failed, continuing...');
+  }
+
   // Create admin user
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@sagedlabs.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123!';

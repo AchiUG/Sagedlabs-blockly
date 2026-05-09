@@ -4,35 +4,61 @@ import { authOptions } from "@/lib/auth-config";
 import { prisma } from "@/lib/db";
 import { XP_REWARDS } from "@/lib/gamification";
 
-// Simulated database (in-memory for prototype)
-// In production, this would use a dedicated Assessment model
-const assessments: Record<string, any> = {};
-
+// No longer using in-memory store for production
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const body = await req.json();
-    const { name, answers, mcScore, type } = body;
+    const { 
+      name = "Young Sage", 
+      answers = {}, 
+      mcScore = 0, 
+      type = "young-sages-final" 
+    } = body;
 
-    const id = Math.random().toString(36).substring(2, 15);
+    const userSession = session as any;
+    let validUserId = null;
+
+    if (userSession?.user?.id) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: userSession.user.id }
+      });
+      if (userExists) {
+        validUserId = userExists.id;
+      }
+    }
+
+    // Create the assessment in the database
+    const assessment = await (prisma as any).assessment.create({
+      data: {
+        name,
+        type,
+        answers: answers as any,
+        mcScore: Number(mcScore) || 0,
+        userId: validUserId,
+      }
+    });
     
-    const submissionData = {
-      ...body,
-      id,
-      userId: session?.user?.id || null,
-      submittedAt: new Date().toISOString()
-    };
+    const id = assessment.id;
     
-    assessments[id] = submissionData;
-    
-    // If user is logged in, perform platform-side updates
-    if (session?.user?.id) {
-      const userId = session.user.id;
+    // If user is logged in and exists, perform platform-side updates
+    if (validUserId) {
+      const userId = validUserId;
 
       // 1. Mark the final assessment lesson as complete
-      // We need to find the lesson ID first
+      // Find the lesson in the Young Sages course
       const lesson = await prisma.lesson.findFirst({
-        where: { title: 'Final Wisdom Assessment' }
+        where: { 
+          OR: [
+            { title: 'Final Wisdom Assessment' },
+            { title: { contains: 'Assessment' } }
+          ],
+          module: {
+            course: {
+              title: { contains: 'Young Sages' }
+            }
+          }
+        }
       });
 
       if (lesson) {
@@ -56,10 +82,10 @@ export async function POST(req: NextRequest) {
       await prisma.userGamification.update({
         where: { userId },
         data: {
-          totalXP: { increment: XP_REWARDS.ASSIGNMENT_SUBMIT + (mcScore * 25) }
+          totalXP: { increment: XP_REWARDS.ASSIGNMENT_SUBMIT + (Number(mcScore) * 25) }
         }
-      }).catch(() => {
-          console.log("Gamification record not found for user", userId);
+      }).catch((err) => {
+        console.log("Gamification record update failed or not found for user", userId, err.message);
       });
 
       // 3. Award "Young Sage" badge
@@ -99,6 +125,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Failed to submit" }, { status: 500 });
   }
 }
-
-// Export the store for the GET route to use
-export { assessments };

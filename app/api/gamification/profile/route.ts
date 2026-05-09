@@ -14,23 +14,41 @@ export async function GET(request: NextRequest) {
 
     const userId = (session.user as any).id;
 
+    // Verify user exists to avoid foreign key violations
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!userExists) {
+      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+    }
+
     // Get or create gamification profile
     let gamification = await prisma.userGamification.findUnique({
       where: { userId }
     });
 
     if (!gamification) {
-      gamification = await prisma.userGamification.create({
-        data: {
-          userId,
-          totalXP: 0,
-          currentLevel: 1,
-          currentStage: 1,
-          stageTitle: 'Seeker',
-          streakDays: 0,
-          lastActiveDate: new Date()
-        }
-      });
+      try {
+        gamification = await prisma.userGamification.create({
+          data: {
+            userId,
+            totalXP: 0,
+            currentLevel: 1,
+            currentStage: 1,
+            stageTitle: 'Seeker',
+            streakDays: 0,
+            lastActiveDate: new Date()
+          }
+        });
+      } catch (createError) {
+        // Handle race condition if profile was created between findUnique and create
+        gamification = await prisma.userGamification.findUnique({
+          where: { userId }
+        });
+        
+        if (!gamification) throw createError;
+      }
     }
 
     const stage = getStageFromXP(gamification.totalXP);

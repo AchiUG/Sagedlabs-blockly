@@ -43,7 +43,9 @@ model User {
   password              String?
   firstName             String?
   lastName              String?
-  role                  UserRole               @default(STUDENT)
+  emailVerificationToken String?   @unique
+  role                  UserRole  @default(STUDENT)
+
   bio                   String?
   institution           String?
   archetype             String?
@@ -61,6 +63,7 @@ model User {
   updatedAt             DateTime               @updatedAt
   groupId               String?
   accounts              Account[]
+  assessments           Assessment[]
   activities            Activity[]             @relation("UserActivities")
   submissions           AssignmentSubmission[]
   blocksProjects        BlocksProject[]
@@ -676,6 +679,29 @@ model BlocksSubmission {
 
   @@index([lessonId])
   @@index([userId])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model Assessment {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  type        String
+  answers     Json
+  mcScore     Int
+  submittedAt DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([type])
 }
 
 model YoungSagesApplication {

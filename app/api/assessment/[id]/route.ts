@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assessments } from "../route";
+import { prisma } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
@@ -7,15 +7,19 @@ export async function GET(
 ) {
   const { id } = await params;
   
-  // Try to get from in-memory store
-  const assessment = assessments[id];
-  
-  if (assessment) {
-    return NextResponse.json({ assessment });
+  try {
+    const assessment = await prisma.assessment.findUnique({
+      where: { id }
+    });
+    
+    if (assessment) {
+      return NextResponse.json({ assessment });
+    }
+  } catch (error) {
+    console.error("Error fetching assessment:", error);
   }
   
   // Fallback for prototype/demo: if not found, return a generic mock
-  // This helps if the server restarted and the in-memory store was cleared
   return NextResponse.json({ 
     assessment: { 
       mcScore: 4, 

@@ -340,7 +340,8 @@ async function main() {
     where: { slug: 'hello-world' },
     update: { 
       blockConfig: defaultToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 1
     },
     create: {
       slug: 'hello-world',
@@ -373,6 +374,7 @@ Make the character say "Hello World!" when you press the Run button.
         },
       },
       isPublished: true,
+      orderIndex: 1,
     },
   });
 
@@ -383,7 +385,8 @@ Make the character say "Hello World!" when you press the Run button.
     where: { slug: 'move-around' },
     update: { 
       blockConfig: defaultToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 2
     },
     create: {
       slug: 'move-around',
@@ -417,6 +420,7 @@ Make the character move in all four directions.
         },
       },
       isPublished: true,
+      orderIndex: 2,
     },
   });
 
@@ -427,7 +431,8 @@ Make the character move in all four directions.
     where: { slug: 'simple-animation' },
     update: { 
       blockConfig: defaultToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 3
     },
     create: {
       slug: 'simple-animation',
@@ -460,6 +465,7 @@ Make the character move horizontally and bounce off the edges.
         },
       },
       isPublished: true,
+      orderIndex: 3,
     },
   });
 
@@ -470,7 +476,8 @@ Make the character move horizontally and bounce off the edges.
     where: { slug: 'interactive-story' },
     update: { 
       blockConfig: defaultToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 4
     },
     create: {
       slug: 'interactive-story',
@@ -502,6 +509,7 @@ Make the character introduce themselves and respond to different keys.
         },
       },
       isPublished: true,
+      orderIndex: 4,
     },
   });
 
@@ -514,7 +522,8 @@ Make the character introduce themselves and respond to different keys.
     where: { slug: 'leuk-says-hello' },
     update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 10
     },
     create: {
       slug: 'leuk-says-hello',
@@ -540,6 +549,7 @@ Make Leuk say "Hello, I am Leuk the Hare!"
         },
       },
       isPublished: true,
+      orderIndex: 10,
     },
   });
 
@@ -550,7 +560,8 @@ Make Leuk say "Hello, I am Leuk the Hare!"
     where: { slug: 'leuk-explores' },
     update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 11
     },
     create: {
       slug: 'leuk-explores',
@@ -576,6 +587,7 @@ Make Leuk move forward 4 times on start.
         },
       },
       isPublished: true,
+      orderIndex: 11,
     },
   });
 
@@ -586,7 +598,8 @@ Make Leuk move forward 4 times on start.
     where: { slug: 'leuk-bounces' },
     update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 12
     },
     create: {
       slug: 'leuk-bounces',
@@ -612,6 +625,7 @@ Make Leuk move back and forth forever.
         },
       },
       isPublished: true,
+      orderIndex: 12,
     },
   });
 
@@ -622,7 +636,8 @@ Make Leuk move back and forth forever.
     where: { slug: 'leuk-litter-detector' },
     update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 13
     },
     create: {
       slug: 'leuk-litter-detector',
@@ -650,6 +665,7 @@ Make Leuk move, and IF his X position is greater than 100, say "I found litter!"
         },
       },
       isPublished: true,
+      orderIndex: 13,
     },
   });
 
@@ -660,7 +676,8 @@ Make Leuk move, and IF his X position is greater than 100, say "I found litter!"
     where: { slug: 'capstone-project' },
     update: { 
       blockConfig: leukFullToolbox,
-      isPublished: true 
+      isPublished: true,
+      orderIndex: 14
     },
     create: {
       slug: 'capstone-project',
@@ -715,6 +732,7 @@ You think like Leuk, observe like a scientist, and build like a programmer!`,
         },
       },
       isPublished: true,
+      orderIndex: 14,
     },
   });
 

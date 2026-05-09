@@ -94,10 +94,10 @@ function CompletionContent() {
                   <div className="bg-gradient-to-r from-[#124734]/5 to-[#D9A441]/5 rounded-xl p-6 mb-4">
                     <p className="text-sm text-gray-500 mb-1">Knowledge Questions Score</p>
                     <p className="text-4xl font-bold text-[#124734]">
-                      {mcScore} <span className="text-lg font-normal text-gray-500">/ 4 correct</span>
+                      {mcScore} <span className="text-lg font-normal text-gray-500">/ 6 correct</span>
                     </p>
                     <p className="text-sm text-gray-500 mt-2">
-                      {mcScore === 4 ? "Perfect score! 🌟" : mcScore >= 3 ? "Great work! 🎯" : mcScore >= 2 ? "Good effort! 💪" : "Keep learning! 📚"}
+                      {mcScore === 6 ? "Perfect score! 🌟" : mcScore >= 4 ? "Great work! 🎯" : mcScore >= 3 ? "Good effort! 💪" : "Keep learning! 📚"}
                     </p>
                   </div>
                 )}
@@ -154,7 +154,7 @@ function CompletionContent() {
             </Card>
 
             {/* Certificate Preview (if score is good) */}
-            {mcScore !== null && mcScore >= 2 && (
+            {mcScore !== null && mcScore >= 3 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

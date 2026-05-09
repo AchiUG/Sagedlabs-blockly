@@ -30,39 +30,58 @@ import {
 const pathways = [
   {
     name: "Young Sages Program",
+    slug: "young-sages",
     audience: "Students (ages 8–17)",
     goal: "Ignite imagination & AI curiosity through play and storytelling",
     journey: "Dreamer → Builder → Navigator",
     endMastery: "Future-ready & wonder-driven youth",
     icon: Sparkles,
-    color: "#F59E0B"
+    color: "#F59E0B",
+    active: true
+  },
+  {
+    name: "Young Sage Kikebo",
+    slug: "kikebo",
+    audience: "Advanced Students",
+    goal: "Deeper dives into AI engineering and complex storytelling",
+    journey: "Builder → Navigator → Architect",
+    endMastery: "Advanced technical & creative capability",
+    icon: Lightbulb,
+    color: "#D97706",
+    active: false
   },
   {
     name: "Educator Pathway",
+    slug: "educator",
     audience: "Teachers, mentors, facilitators",
     goal: "Integrate AI into teaching & lead others responsibly",
     journey: "Seeker → Apprentice → Cultivator → Griot-Scholar",
     endMastery: "Architect of Learning",
     icon: GraduationCap,
-    color: "#3B82F6"
+    color: "#3B82F6",
+    active: false
   },
   {
     name: "Technologist Pathway",
+    slug: "technologist",
     audience: "IT professionals, creatives, engineers",
     goal: "Master contextual AI design, ethics, and systems thinking",
     journey: "Seeker → Apprentice → Cultivator → Scholar-Architect",
     endMastery: "Guardian of Systems",
     icon: Briefcase,
-    color: "#8B5CF6"
+    color: "#8B5CF6",
+    active: false
   },
   {
     name: "SAGE Mastery Track",
+    slug: "mastery",
     audience: "Cross-disciplinary alumni from any path",
     goal: "Integrate all pathways — create, defend, and teach systems of wisdom",
     journey: "Architect → Guardian → Sage",
     endMastery: "Keeper of Agency & Wisdom",
     icon: Crown,
-    color: "#EC4899"
+    color: "#EC4899",
+    active: false
   }
 ];
 
@@ -218,6 +237,23 @@ export default function CurriculumPage() {
                         <p className="text-sm font-semibold text-gray-500">END MASTERY</p>
                         <p className="text-gray-900 font-bold">{pathway.endMastery}</p>
                       </div>
+                      <div className="pt-4">
+                        <Link href={pathway.active ? "/young-sages" : `/waitlist/${pathway.slug}`}>
+                          <Button 
+                            className="w-full" 
+                            style={{ 
+                              backgroundColor: pathway.active ? pathway.color : 'transparent',
+                              borderColor: pathway.color,
+                              color: pathway.active ? 'white' : pathway.color,
+                              borderWidth: '2px'
+                            }}
+                            variant={pathway.active ? "default" : "outline"}
+                          >
+                            {pathway.active ? "Register Now" : "Join Waitlist"}
+                            <ArrowRight className="ml-2 w-4 h-4" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -231,10 +267,10 @@ export default function CurriculumPage() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">Pathway</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">Audience</th>
                   <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">Goal</th>
                   <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">Journey</th>
                   <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">End Mastery</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -245,10 +281,16 @@ export default function CurriculumPage() {
                         {pathway.name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 border-b">{pathway.audience}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 border-b">{pathway.goal}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 border-b font-medium">{pathway.journey}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 border-b font-semibold">{pathway.endMastery}</td>
+                    <td className="px-6 py-4 text-sm border-b">
+                      <Link href={pathway.active ? "/young-sages" : `/waitlist/${pathway.slug}`}>
+                        <span className={`font-semibold hover:underline cursor-pointer ${pathway.active ? 'text-green-600' : 'text-amber-600'}`}>
+                          {pathway.active ? 'Register Now' : 'Join Waitlist'}
+                        </span>
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
