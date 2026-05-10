@@ -161,61 +161,36 @@ function CompletionContent() {
                 transition={{ delay: 0.5 }}
                 className="print:mt-0 print:shadow-none"
               >
-                <Card className="border-4 border-[#D9A441] shadow-2xl overflow-hidden bg-white print:border-8 print:border-[#D9A441]">
-                  <div className="p-8 text-center relative">
-                    <div className="absolute top-0 left-0 w-full h-2 bg-[#124734]" />
-                    <div className="absolute bottom-0 left-0 w-full h-2 bg-[#124734]" />
-                    <div className="absolute top-0 left-0 h-full w-2 bg-[#124734]" />
-                    <div className="absolute top-0 right-0 h-full w-2 bg-[#124734]" />
-                    
-                    <div className="mb-6 flex justify-center">
-                      <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center border-2 border-[#D9A441]">
-                        <Star className="w-10 h-10 text-[#D9A441]" />
-                      </div>
-                    </div>
-                    
-                    <h2 className="text-sm font-bold text-[#124734] uppercase tracking-widest mb-2">Certificate of Achievement</h2>
-                    <p className="text-gray-500 text-xs mb-8 italic">This is to certify that</p>
-                    
-                    <h1 className="text-4xl font-serif font-bold text-gray-900 mb-8 border-b-2 border-gray-100 inline-block px-12 pb-2">
-                      {studentName}
-                    </h1>
-                    
-                    <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto">
-                      has successfully completed the 8-week <strong>Young Sages</strong> program and demonstrated exceptional wisdom in <strong>AI Thinking</strong>, <strong>Observation</strong>, and <strong>Community Problem Solving</strong>.
-                    </p>
-                    
-                    <div className="flex justify-between items-end mt-12 max-w-sm mx-auto">
-                      <div className="text-center">
-                        <div className="font-serif italic text-gray-800 border-b border-gray-300 px-4">Leuk the Hare</div>
-                        <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">Wisdom Guide</div>
-                      </div>
-                      <div className="bg-[#124734] p-3 rounded-lg rotate-12 shadow-lg">
-                        <Award className="w-8 h-8 text-[#D9A441]" />
-                      </div>
-                      <div className="text-center">
-                        <div className="font-serif italic text-gray-800 border-b border-gray-300 px-4">SAGE-D Team</div>
-                        <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">Educational Mentor</div>
-                      </div>
+                <Card className="border-4 border-[#D9A441] shadow-2xl overflow-hidden bg-white group hover:shadow-amber-200/50 transition-all duration-500">
+                  <div className="relative aspect-[1.414/1] overflow-hidden">
+                    <img 
+                      src="/certificate.jpeg" 
+                      alt="Certificate Background" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" 
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white/40">
+                      <Award className="w-12 h-12 text-[#D9A441] mb-2" />
+                      <h3 className="text-xl font-serif font-bold text-[#124734] mb-1">OFFICIAL CERTIFICATE</h3>
+                      <p className="text-xs text-gray-600 uppercase tracking-widest mb-4 italic">Granted to {studentName}</p>
+                      
+                      <Link href={`/young-sages/certificate/${assessmentId}?name=${encodeURIComponent(studentName)}`}>
+                        <Button className="bg-[#124734] hover:bg-[#0d3324] text-white">
+                          <Award className="w-4 h-4 mr-2" />
+                          View & Download Official Certificate
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </Card>
                 <div className="mt-4 text-center print:hidden">
                   <p className="text-sm text-gray-500 mb-4">
-                    🎉 This is a preview of your official certificate! 
-                    Your teacher will verify your results soon.
+                    🎉 Your official certificate is ready! 
+                    Click above to view your personalized, shareable version.
                   </p>
                   <div className="flex justify-center gap-3">
-                    <Button 
-                      className="bg-[#D9A441] hover:bg-[#c6953a] text-[#124734] font-bold"
-                      onClick={handlePrint}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Print Certificate
-                    </Button>
                     <Button variant="outline" onClick={handleShare}>
                       <Share2 className="w-4 h-4 mr-2" />
-                      Share Achievement
+                      Copy Share Link
                     </Button>
                   </div>
                 </div>
