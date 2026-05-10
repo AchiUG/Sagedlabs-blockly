@@ -8,7 +8,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'SAGED <onboarding@resend.dev>', // Update this to your verified domain in production
+      from: 'SAGED <info@sagedlabs.com>', 
       to: email,
       subject: 'Reset your SAGED password',
       html: `
@@ -50,7 +50,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'SAGED <onboarding@resend.dev>',
+      from: 'SAGED <info@sagedlabs.com>',
       to: email,
       subject: 'Verify your SAGED account',
       html: `
