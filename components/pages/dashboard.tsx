@@ -1,9 +1,11 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/navigation/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +35,39 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, session, dashboardData, userRole }: DashboardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isFinalizingPayment, setIsFinalizingPayment] = useState(false);
+
+  // Safety-net: finalize provisioning on redirect from Stripe, even if webhooks are delayed/misconfigured.
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    if (payment !== 'success' || !sessionId) return;
+
+    let cancelled = false;
+    (async () => {
+      setIsFinalizingPayment(true);
+      try {
+        await fetch(`/api/stripe/verify?session_id=${encodeURIComponent(sessionId)}`, {
+          method: 'POST',
+        });
+      } catch (e) {
+        console.error('Payment finalization error:', e);
+      } finally {
+        if (cancelled) return;
+        setIsFinalizingPayment(false);
+        // Clean up the URL and refresh server data (enrollments/subscription).
+        router.replace('/dashboard');
+        router.refresh();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, router]);
+
   const renderStudentDashboard = () => (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -42,6 +77,11 @@ export default function Dashboard({ user, session, dashboardData, userRole }: Da
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.firstName}! 👋
           </h1>
+          {isFinalizingPayment && (
+            <p className="text-sm text-gray-700 mt-2">
+              Finalizing your payment and unlocking access...
+            </p>
+          )}
           <p className="text-gray-700 mb-4">
             Continue your AI learning journey and track your progress.
           </p>

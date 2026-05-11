@@ -24,8 +24,11 @@ import {
   Calendar,
   PlayCircle,
   FileText,
-  BarChart3
+  BarChart3,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import { SUMMER_PROGRAM_CONFIG } from '@/lib/config/summer-program';
 
 interface CourseDetailPageProps {
   course: any;
@@ -38,8 +41,10 @@ interface CourseDetailPageProps {
 export default function CourseDetailPage({ course, session, enrollment, userProgress, isAuthenticated }: CourseDetailPageProps) {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   const isEnrolled = !!enrollment;
+  const isSummerProgram = course.title.toLowerCase().includes('young sages');
   const totalLessons = isAuthenticated && course?.modules?.reduce((acc: number, module: any) => acc + (module.lessons?.length || 0), 0) || 0;
   const completedLessons = userProgress?.filter(p => p.completed)?.length || 0;
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -47,6 +52,11 @@ export default function CourseDetailPage({ course, session, enrollment, userProg
   const handleEnroll = async () => {
     if (!session) {
       router.push('/auth/signin');
+      return;
+    }
+
+    if (isSummerProgram && !isEnrolled) {
+      handlePayment();
       return;
     }
 
@@ -70,6 +80,32 @@ export default function CourseDetailPage({ course, session, enrollment, userProg
     } catch (error) {
       console.error('Enrollment error:', error);
       setIsEnrolling(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    setIsPaying(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tierId: 'STANDARD',
+          programId: SUMMER_PROGRAM_CONFIG.programId
+        }),
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        router.push("/young-sages#tuition");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      router.push("/young-sages#tuition");
+    } finally {
+      setIsPaying(false);
     }
   };
 

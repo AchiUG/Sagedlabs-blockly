@@ -19,8 +19,10 @@ import {
   GraduationCap,
   Sparkles,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  ChevronRight
 } from 'lucide-react';
+import { SUMMER_PROGRAM_CONFIG } from '@/lib/config/summer-program';
 
 interface CoursesPageProps {
   courses: any[];
@@ -40,14 +42,15 @@ export default function CoursesCatalogPage({
   const [isPaying, setIsPaying] = useState<string | null>(null);
   const router = useRouter();
 
-  const handlePayment = async (courseId: string) => {
-    setIsPaying(courseId);
+  const handlePayment = async (course: any) => {
+    setIsPaying(course.id);
     try {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: "price_placeholder_young_sages", // User needs to replace this with real Stripe Price ID
+          tierId: 'STANDARD',
+          programId: SUMMER_PROGRAM_CONFIG.programId
         }),
       });
 
@@ -55,11 +58,11 @@ export default function CoursesCatalogPage({
       if (data.url) {
         window.location.href = data.url;
       } else {
-        router.push("/auth/signup?program=young-sages");
+        router.push("/young-sages#tuition");
       }
     } catch (err) {
       console.error("Payment error:", err);
-      router.push("/auth/signup?program=young-sages");
+      router.push("/young-sages#tuition");
     } finally {
       setIsPaying(null);
     }
@@ -244,7 +247,7 @@ export default function CoursesCatalogPage({
                           {course.title.toLowerCase().includes('young sages') ? (
                             <Button 
                               className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                              onClick={() => handlePayment(course.id)}
+                              onClick={() => handlePayment(course)}
                               disabled={isPaying === course.id}
                             >
                               {isPaying === course.id ? (

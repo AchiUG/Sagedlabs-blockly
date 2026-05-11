@@ -7,21 +7,26 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Sparkles,
-  Brain,
-  Users,
-  Gamepad2,
-  CheckCircle2,
-  ArrowRight,
-  Mail,
-  Calendar,
-  BookOpen,
-  Star,
-  Loader2,
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Sparkles, 
+  Brain, 
+  Users, 
+  Gamepad2, 
+  CheckCircle2, 
+  ArrowRight, 
+  Mail, 
+  Calendar, 
+  BookOpen, 
+  Star, 
+  Loader2, 
   Heart,
+  Ticket,
+  Percent,
+  UserPlus,
+  Lightbulb
 } from "lucide-react";
+import { SUMMER_PROGRAM_CONFIG, type SummerTierId } from "@/lib/config/summer-program";
 
 export default function YoungSagesLandingPage() {
   const { data: session } = useSession();
@@ -64,16 +69,24 @@ export default function YoungSagesLandingPage() {
   };
 
   const router = useRouter();
-  const [isPaying, setIsPaying] = useState(false);
+  const [isPaying, setIsPaying] = useState<SummerTierId | null>(null);
 
-  const handlePayment = async () => {
-    setIsPaying(true);
+  const handlePayment = async (tierId: SummerTierId = 'STANDARD') => {
+    const tier = SUMMER_PROGRAM_CONFIG.tiers[tierId];
+    
+    if (tier.type === 'application') {
+      router.push('/joye/young-sages/signup');
+      return;
+    }
+
+    setIsPaying(tierId);
     try {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: "price_placeholder_young_sages", // User needs to replace this with real Stripe Price ID
+          tierId: tierId,
+          programId: SUMMER_PROGRAM_CONFIG.programId
         }),
       });
 
@@ -82,13 +95,13 @@ export default function YoungSagesLandingPage() {
         window.location.href = data.url;
       } else {
         // If not logged in, redirect to signup
-        router.push("/auth/signup?program=young-sages");
+        router.push(`/auth/signup?program=young-sages&tier=${tierId}`);
       }
     } catch (err) {
       console.error("Payment error:", err);
-      router.push("/auth/signup?program=young-sages");
+      router.push(`/auth/signup?program=young-sages&tier=${tierId}`);
     } finally {
-      setIsPaying(false);
+      setIsPaying(null);
     }
   };
 
@@ -124,6 +137,8 @@ export default function YoungSagesLandingPage() {
     "Designed for ages 8-14",
   ];
 
+  const pricingTiers = Object.values(SUMMER_PROGRAM_CONFIG.tiers);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50">
       {/* Hero Section */}
@@ -134,7 +149,7 @@ export default function YoungSagesLandingPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
-              Now Enrolling: Season 1 Cohort
+              Now Enrolling: Summer 2026 Cohort
             </div>
 
             {/* Main Heading */}
@@ -142,13 +157,13 @@ export default function YoungSagesLandingPage() {
               <span className="text-amber-600">Young Sages</span>
               <br />
               <span className="text-2xl md:text-4xl font-medium text-gray-700">
-                Stories, Systems & Introduction to AI Thinking
+                Summer 2026 Program
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
               An 8-week adventure where children ages 8-14 learn to think like AI through African folktales, 
-              interactive games, and hands-on coding with Leuk the Hare.
+              interactive games, and hands-on coding.
             </p>
 
             {/* CTA Buttons */}
@@ -161,26 +176,26 @@ export default function YoungSagesLandingPage() {
                 </Link>
               ) : (
                 <Button 
-                  onClick={handlePayment} 
-                  disabled={isPaying}
+                  onClick={() => handlePayment('STANDARD')} 
+                  disabled={!!isPaying}
                   size="lg" 
                   className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg"
                 >
-                  {isPaying ? (
+                  {isPaying === 'STANDARD' ? (
                     <>
                       <Loader2 className="mr-2 w-5 h-5 animate-spin" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      Join & Pay Now <ArrowRight className="ml-2 w-5 h-5" />
+                      Join & Enroll Now <ArrowRight className="ml-2 w-5 h-5" />
                     </>
                   )}
                 </Button>
               )}
-              <a href="#newsletter">
+              <a href="#tuition">
                 <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50 px-8 py-6 text-lg">
-                  <Mail className="mr-2 w-5 h-5" /> Get Updates
+                  <Ticket className="mr-2 w-5 h-5" /> View Tuition Tiers
                 </Button>
               </a>
             </div>
@@ -192,17 +207,133 @@ export default function YoungSagesLandingPage() {
                 <div className="text-sm text-gray-600">Weeks</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-amber-600">32</div>
-                <div className="text-sm text-gray-600">Lessons</div>
+                <div className="text-3xl font-bold text-amber-600">Virtual</div>
+                <div className="text-sm text-gray-600">Format</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-amber-600">8-14</div>
                 <div className="text-sm text-gray-600">Ages</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-amber-600">10</div>
-                <div className="text-sm text-gray-600">Spots per Cohort</div>
+                <div className="text-3xl font-bold text-amber-600">Project</div>
+                <div className="text-sm text-gray-600">Based</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Program Details Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  Future <span className="text-amber-600">Builders & Thinkers</span>
+                </h2>
+                <p className="text-lg text-gray-600 mb-6">
+                  SAGED is not just a coding camp. We teach students how to think strategically, 
+                  understand AI, recognize patterns, and communicate ideas.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    "Weekly live interactive sessions",
+                    "AI & coding foundations",
+                    "Creative problem-solving activities",
+                    "Final showcase & certificate",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-gray-700">
+                      <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="relative">
+                <div className="aspect-square bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">🚀</div>
+                    <h3 className="text-2xl font-bold text-amber-800 mb-2">Build. Lead. Think.</h3>
+                    <p className="text-amber-700">Empowering the next generation of AI-literate leaders.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tuition & Scholarships Section */}
+      <section id="tuition" className="py-20 bg-amber-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+                Tuition & Scholarship Opportunities
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                At SAGED, we believe curiosity, initiative, and community should be rewarded. 
+                Explore our enrollment tiers below.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pricingTiers.map((tier) => {
+                const isScholarship = tier.id === 'SCHOLARSHIP';
+                const Icon = isScholarship ? Lightbulb : (tier.id === 'REFERRAL' ? UserPlus : (tier.id === 'STANDARD' ? Ticket : Percent));
+                
+                return (
+                  <Card key={tier.id} className={`relative overflow-hidden border-2 transition-all hover:shadow-xl ${tier.id === 'STANDARD' ? 'border-amber-500 shadow-md' : 'border-amber-100'}`}>
+                    {tier.discountLabel && (
+                      <div className="absolute top-4 right-4 bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">
+                        {tier.discountLabel}
+                      </div>
+                    )}
+                    <CardHeader className="pb-4">
+                      <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
+                        <Icon className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <CardTitle className="text-xl">{tier.label}</CardTitle>
+                      <div className="flex items-baseline gap-1 mt-2">
+                        <span className="text-4xl font-bold text-gray-900">
+                          ${tier.price}
+                        </span>
+                        {tier.priceMax && (
+                          <span className="text-xl text-gray-500">
+                            – ${tier.priceMax}
+                          </span>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <p className="text-sm text-gray-600 min-h-[48px]">
+                        {tier.description}
+                      </p>
+                      
+                      <Button 
+                        onClick={() => handlePayment(tier.id)}
+                        disabled={!!isPaying}
+                        variant={tier.id === 'STANDARD' ? 'default' : 'outline'}
+                        className={`w-full py-6 text-lg ${tier.id === 'STANDARD' ? 'bg-amber-600 hover:bg-amber-700' : 'border-amber-600 text-amber-700'}`}
+                      >
+                        {isPaying === tier.id ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          tier.actionLabel
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            
+            <div className="mt-12 p-6 bg-white rounded-2xl border-2 border-dashed border-amber-200 text-center">
+              <p className="text-gray-600">
+                <strong>Need more information?</strong> Spaces are limited to preserve quality interaction. 
+                Registration is accepted on a first-come basis.
+              </p>
             </div>
           </div>
         </div>
@@ -213,7 +344,16 @@ export default function YoungSagesLandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
+              <div className="order-2 md:order-1 relative">
+                <div className="aspect-square bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-9xl mb-4">🐰</div>
+                    <p className="text-2xl font-bold text-amber-700">Leuk the Wise</p>
+                    <p className="text-amber-600">Your AI Thinking Guide</p>
+                  </div>
+                </div>
+              </div>
+              <div className="order-1 md:order-2">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                   Meet <span className="text-amber-600">Leuk the Hare</span>
                 </h2>
@@ -231,15 +371,6 @@ export default function YoungSagesLandingPage() {
                     &quot;Intelligence is not just memory. It is updating memory when patterns change.&quot;
                   </p>
                   <p className="text-amber-600 text-sm mt-2">— Lesson from Week 2</p>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-amber-100 to-orange-100 rounded-3xl flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-9xl mb-4">🐰</div>
-                    <p className="text-2xl font-bold text-amber-700">Leuk the Wise</p>
-                    <p className="text-amber-600">Your AI Thinking Guide</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -269,25 +400,6 @@ export default function YoungSagesLandingPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Program Highlights */}
-      <section className="py-16 bg-amber-600 text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8">
-              Program Highlights
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {programHighlights.map((highlight, index) => (
-                <div key={index} className="flex items-center gap-2 justify-center bg-white/10 rounded-lg p-4">
-                  <CheckCircle2 className="w-5 h-5 text-amber-200 flex-shrink-0" />
-                  <span className="text-sm md:text-base">{highlight}</span>
-                </div>
               ))}
             </div>
           </div>
@@ -379,7 +491,7 @@ export default function YoungSagesLandingPage() {
               Ready to Begin the Adventure?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Limited to 10 students per cohort for personalized attention.
+              Limited cohort size to preserve quality interaction and mentorship.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {session ? (
@@ -390,19 +502,19 @@ export default function YoungSagesLandingPage() {
                 </Link>
               ) : (
                 <Button 
-                  onClick={handlePayment} 
-                  disabled={isPaying}
+                  onClick={() => handlePayment('STANDARD')} 
+                  disabled={!!isPaying}
                   size="lg" 
                   className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg"
                 >
-                  {isPaying ? (
+                  {isPaying === 'STANDARD' ? (
                     <>
                       <Loader2 className="mr-2 w-5 h-5 animate-spin" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      Join Season 1 Now <ArrowRight className="ml-2 w-5 h-5" />
+                      Join Summer 2026 Now <ArrowRight className="ml-2 w-5 h-5" />
                     </>
                   )}
                 </Button>
