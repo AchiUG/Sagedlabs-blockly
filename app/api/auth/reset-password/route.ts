@@ -20,12 +20,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
     }
 
-    // Update user password
+    // Update user password and verify email
     const hashedPassword = await bcryptjs.hash(password, 12);
     
     await prisma.user.update({
       where: { email: resetToken.email },
-      data: { password: hashedPassword },
+      data: { 
+        password: hashedPassword,
+        emailVerified: new Date(), // Prove ownership via reset
+        emailVerificationToken: null
+      },
     });
 
     // Delete the used token

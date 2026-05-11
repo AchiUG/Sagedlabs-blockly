@@ -51,7 +51,20 @@ export async function POST(request: NextRequest) {
     });
 
     // Send verification email
-    await sendVerificationEmail(user.email, verificationToken);
+    try {
+      await sendVerificationEmail(user.email, verificationToken);
+    } catch (emailError) {
+      console.error('Failed to send verification email during signup:', emailError);
+      // We don't fail the whole signup if email fails, but we inform the user
+      return NextResponse.json({
+        message: 'User created successfully, but we had trouble sending the verification email. Please contact support or try resetting your password later.',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        }
+      });
+    }
 
     return NextResponse.json({
       message: 'User created successfully. Please check your email to verify your account.',

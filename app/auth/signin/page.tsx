@@ -41,7 +41,13 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        if (result.error === 'EmailNotVerified') {
+          setError('Please verify your email address before signing in. Check your inbox for a verification link.');
+        } else if (result.error === 'InvalidPassword' || result.error === 'CredentialsSignin') {
+          setError('Invalid email or password. Please try again.');
+        } else {
+          setError(result.error || 'An error occurred during sign in.');
+        }
       } else {
         router.replace('/dashboard');
       }
