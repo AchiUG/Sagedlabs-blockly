@@ -1,8 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/services/stripe";
-import { prisma } from "@/lib/db";
 import Stripe from "stripe";
+import { provisionFromCheckoutSession } from "@/lib/services/stripe-provisioning";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -25,23 +25,16 @@ export async function POST(request: NextRequest) {
   // Handle the event
   switch (event.type) {
     case "checkout.session.completed":
-      const session = event.data.object as Stripe.Checkout.Session;
-      
-      const userId = session.metadata?.userId;
-      const program = session.metadata?.program;
-
-      if (userId && program === 'YOUNG_SAGES_SEASON_1') {
-        // Upgrade the user in the database
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            subscriptionTier: 'YOUNG_SAGES',
-            subscriptionStatus: 'ACTIVE',
-            subscriptionStartDate: new Date(),
-          },
-        });
-        
-        console.log(`User ${userId} upgraded to YOUNG_SAGES successfully.`);
+      {
+        const session = event.data.object as Stripe.Checkout.Session;
+        try {
+          await provisionFromCheckoutSession(session);
+          console.log(`✅ Provisioned from Stripe checkout session ${session.id}`);
+        } catch (e: any) {
+          console.error(`❌ Failed to provision from Stripe checkout session ${session.id}:`, e?.message || e);
+          // Return a non-2xx so Stripe retries once the underlying issue is fixed.
+          return NextResponse.json({ error: "Provisioning failed" }, { status: 500 });
+        }
       }
       break;
     
