@@ -24,6 +24,7 @@ import {
   Ticket,
   Percent,
   UserPlus,
+  Clock,
   Lightbulb
 } from "lucide-react";
 import { SUMMER_PROGRAM_CONFIG, type SummerTierId } from "@/lib/config/summer-program";
@@ -138,6 +139,14 @@ export default function YoungSagesLandingPage() {
   ];
 
   const pricingTiers = Object.values(SUMMER_PROGRAM_CONFIG.tiers);
+
+  const tierIcons: Record<SummerTierId, any> = {
+    STANDARD: Ticket,
+    EARLY_SAGE: Clock,
+    COMMUNITY: Users,
+    REFERRAL: UserPlus,
+    SCHOLARSHIP: Lightbulb,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50">
@@ -279,13 +288,13 @@ export default function YoungSagesLandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="flex flex-wrap justify-center gap-8">
               {pricingTiers.map((tier) => {
-                const isScholarship = tier.id === 'SCHOLARSHIP';
-                const Icon = isScholarship ? Lightbulb : (tier.id === 'REFERRAL' ? UserPlus : (tier.id === 'STANDARD' ? Ticket : Percent));
+                const Icon = tierIcons[tier.id] || Ticket;
+                const hasDiscount = tier.price < SUMMER_PROGRAM_CONFIG.basePrice;
                 
                 return (
-                  <Card key={tier.id} className={`relative overflow-hidden border-2 transition-all hover:shadow-xl ${tier.id === 'STANDARD' ? 'border-amber-500 shadow-md' : 'border-amber-100'}`}>
+                  <Card key={tier.id} className={`relative flex flex-col w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] overflow-hidden border-2 transition-all hover:shadow-xl ${tier.id === 'STANDARD' ? 'border-amber-500 shadow-md' : 'border-amber-100'}`}>
                     {tier.discountLabel && (
                       <div className="absolute top-4 right-4 bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">
                         {tier.discountLabel}
@@ -296,19 +305,31 @@ export default function YoungSagesLandingPage() {
                         <Icon className="w-6 h-6 text-amber-600" />
                       </div>
                       <CardTitle className="text-xl">{tier.label}</CardTitle>
-                      <div className="flex items-baseline gap-1 mt-2">
-                        <span className="text-4xl font-bold text-gray-900">
-                          ${tier.price}
-                        </span>
-                        {tier.priceMax && (
-                          <span className="text-xl text-gray-500">
-                            – ${tier.priceMax}
+                      
+                      <div className="flex flex-col mt-2">
+                        {hasDiscount ? (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${SUMMER_PROGRAM_CONFIG.basePrice}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-transparent select-none">
+                            spacer
                           </span>
                         )}
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-bold text-gray-900">
+                            ${tier.price}
+                          </span>
+                          {tier.priceMax && (
+                            <span className="text-xl text-gray-500">
+                              – ${tier.priceMax}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      <p className="text-sm text-gray-600 min-h-[48px]">
+                    <CardContent className="flex-grow flex flex-col justify-between space-y-6">
+                      <p className="text-sm text-gray-600">
                         {tier.description}
                       </p>
                       
