@@ -162,8 +162,9 @@ export default function YoungSagesLandingPage() {
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              An 8-week adventure where children ages 8-14 learn to think like AI through African folktales, 
-              interactive games, and hands-on coding.
+              An 8-week adventure where children ages 8–14 learn to think
+	      like AI through storytelling, strategy, games, and hands-on coding, building creativity, confidence, 
+		and future-ready thinking skills.
             </p>
 
             {/* CTA Buttons */}
@@ -194,7 +195,7 @@ export default function YoungSagesLandingPage() {
                 </Button>
               )}
               <a href="#tuition">
-                <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50 px-8 py-6 text-lg">
+                <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50 hover:text-amber-800 px-8 py-6 text-lg">
                   <Ticket className="mr-2 w-5 h-5" /> View Tuition Tiers
                 </Button>
               </a>
@@ -315,7 +316,7 @@ export default function YoungSagesLandingPage() {
                         onClick={() => handlePayment(tier.id)}
                         disabled={!!isPaying}
                         variant={tier.id === 'STANDARD' ? 'default' : 'outline'}
-                        className={`w-full py-6 text-lg ${tier.id === 'STANDARD' ? 'bg-amber-600 hover:bg-amber-700' : 'border-amber-600 text-amber-700'}`}
+                        className={`w-full py-6 text-lg ${tier.id === 'STANDARD' ? 'bg-amber-600 hover:bg-amber-700' : 'border-amber-600 text-amber-700 hover:bg-amber-50 hover:text-amber-800'}`}
                       >
                         {isPaying === tier.id ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
