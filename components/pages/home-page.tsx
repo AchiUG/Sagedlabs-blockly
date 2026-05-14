@@ -134,25 +134,25 @@ const instructors = [
     name: "John Obia",
     title: "Chief Sage Officer (CSO)",
     credentials: "Director, Design Oversight Cloud/AI, DTCC",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5'%3E%3Crect width='24' height='24' fill='%23f1f5f9'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E"
+    image: "professionals/John Obia.jpeg"
   },
   {
     name: "Ayoge Bassey",
     title: "CEO",
     credentials: "LocalBaskets Canada",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5'%3E%3Crect width='24' height='24' fill='%23f1f5f9'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E"
+    image: "professionals/Lady 1.png"
   },
   {
     name: "Achilike Ugonna Victor",
     title: "AI Operations Engineer & Program Coordinator",
     credentials: "SAGED",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5'%3E%3Crect width='24' height='24' fill='%23f1f5f9'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E"
+    image: "professionals/Achilike Victor.jpeg"
   },
   {
     name: "Naomi Nwokolo, Esq",
     title: "General Counsel and ESG Leader",
     credentials: "CEO, United Nations Global Compact",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1.5'%3E%3Crect width='24' height='24' fill='%23f1f5f9'/%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E"
+    image: "professionals/Lady 2.png"
   }
 ];
 
