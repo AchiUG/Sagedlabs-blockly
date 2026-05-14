@@ -143,7 +143,7 @@ const instructors = [
     image: "professionals/Lady 1.png"
   },
   {
-    name: "Achilike Ugonna Victor",
+    name: "Victor Achilike",
     title: "AI Operations Engineer & Program Coordinator",
     credentials: "SAGED",
     image: "professionals/Achilike Victor.jpeg"
